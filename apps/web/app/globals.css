@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --rws-bg: #0a0a0b;
+  --rws-surface: #141416;
+  --rws-border: #2a2a2e;
+  --rws-fg: #f4f4f5;
+  --rws-muted: #a1a1aa;
+  --rws-accent: #22d3ee;
+  --rws-accent-dim: rgba(34, 211, 238, 0.12);
+  --rws-max-width: 1280px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--rws-bg);
+  color: var(--rws-fg);
+}

@@ -1,0 +1,421 @@
+RealWorkStudio Website – DLD
+
+(Full System – Frontend + Backend + Firebase + GitHub Integration)
+0. GLOBAL SYSTEM ARCHITECTURE
+
+Architecture Style
+
+Frontend: Next.js (App Router, SSR + ISR)
+Backend: Node.js (Express – Modular Monolith)
+Database: PostgreSQL
+Storage: Firebase Storage
+External API: GitHub API
+Auth (Admin): JWT-based
+Deployment: Render
+System Flow
+
+
+
+
+User → Next.js (Frontend SSR)
+     → Backend API (Express)
+     → PostgreSQL (Data)
+     → Firebase (Media)
+     → GitHub API (Leaderboard)
+Monorepo Structure (Recommended)
+
+
+
+
+realworkstudio/
+│
+├── apps/
+│   ├── web/          # Public Website (Next.js)
+│   ├── admin/        # Admin Panel (Next.js)
+│   └── api/          # Backend (Node.js)
+│
+├── packages/
+│   ├── ui/           # Shared UI components
+│   ├── config/       # Env, constants
+│   └── utils/
+Backend Architecture Pattern
+
+Controller → Service → Repository → DB
+DTO-based request/response
+Central error handler
+Middleware-based validation
+Coding Standards
+
+TypeScript everywhere
+ESLint + Prettier
+Strict typing (no any)
+Environment-based config
+Logging (Winston)
+MODULE 1: PUBLIC WEBSITE (END-TO-END)
+
+Frontend Implementation
+
+Folder Structure
+
+
+
+
+apps/web/
+│
+├── app/
+│   ├── page.tsx
+│   ├── programs/
+│   ├── testimonials/
+│   ├── leaderboard/
+│   ├── how-it-works/
+│   ├── why-realworkstudio/
+│   ├── apply/
+│   └── about/
+│
+├── components/
+├── features/
+├── services/
+└── types/
+Backend APIs
+
+
+
+
+GET /api/programs
+GET /api/programs/:slug
+GET /api/testimonials
+GET /api/leaderboard
+POST /api/apply
+GET /api/content/home
+Integration Flow
+
+Homepage → fetch programs + testimonials + leaderboard
+Program page → fetch program by slug
+Apply → submit form → DB
+UI Principles
+
+Section-based layout (Hero → CTA flow)
+Minimal + premium
+Responsive (mobile-first)
+MODULE 2: ADMIN PANEL (END-TO-END)
+
+Frontend (Admin)
+
+
+
+
+apps/admin/
+│
+├── app/
+│   ├── dashboard/
+│   ├── programs/
+│   ├── testimonials/
+│   ├── leaderboard/
+│   ├── seo/
+│   ├── content/
+│   └── media/
+Backend APIs
+
+
+
+
+POST   /api/admin/login
+GET    /api/admin/dashboard
+POST   /api/programs
+PATCH  /api/programs/:id
+DELETE /api/programs/:id
+POST   /api/testimonials
+PATCH  /api/testimonials/:id
+POST   /api/leaderboard/sync
+POST   /api/media/upload
+Auth Flow
+
+
+
+
+Admin Login → JWT Token → Protected APIs
+Validation
+
+Zod (frontend)
+Joi (backend)
+MODULE 3: PROGRAM MANAGEMENT (END-TO-END)
+
+DB Schema
+
+
+
+
+programs
+- id UUID
+- title
+- slug UNIQUE
+- short_description
+- full_description
+- thumbnail_url
+- banner_url
+- skills JSON
+- tools JSON
+- outcomes TEXT
+- display_order INT
+- status ENUM
+Backend Logic
+
+Slug auto-generate
+Duplicate prevention
+Sorting by display_order
+Frontend Integration
+
+Programs page → list
+Detail page → dynamic route
+Best Practices
+
+SEO-friendly slugs
+No HTML in DB → use markdown
+MODULE 4: TESTIMONIAL SYSTEM (END-TO-END)
+
+DB Schema
+
+
+
+
+testimonials
+- id
+- name
+- photo_url
+- program_id
+- rating
+- type
+- content
+- video_url
+- is_featured
+- is_approved
+Firebase Integration
+
+Upload Flow
+
+
+
+
+Admin Upload → Firebase Storage → Get URL → Save in DB
+Backend
+
+
+
+
+POST /api/testimonials
+GET  /api/testimonials
+Frontend
+
+Homepage → featured testimonials
+Page → all testimonials
+Rules
+
+Only approved shown
+Video lazy-loaded
+MODULE 5: LEADERBOARD (GitHub INTEGRATION – END-TO-END)
+
+DB Schema
+
+
+
+
+leaderboard
+- id
+- name
+- github_username
+- commits
+- repos
+- score
+- rank
+- last_synced_at
+GitHub Service
+
+
+
+
+modules/github.service.ts
+Integration Flow
+
+
+
+
+Admin adds GitHub username
+→ Backend calls GitHub API
+→ Fetch:
+   - repos
+   - events
+→ Calculate score
+→ Store in DB
+→ Frontend displays
+Cron Job
+
+
+
+
+Runs daily:
+→ sync leaderboard
+API
+
+
+
+
+GET  /api/leaderboard
+POST /api/leaderboard/sync
+Best Practices
+
+Cache results in DB
+Avoid real-time API calls
+Handle rate limits
+MODULE 6: SEO SYSTEM (END-TO-END)
+
+DB Schema
+
+
+
+
+seo_meta
+- id
+- page
+- slug
+- title
+- description
+- keywords
+- og_image
+Backend
+
+
+
+
+GET /api/seo/:page
+POST /api/seo
+Frontend
+
+Inject metadata via Next.js Head
+Features
+
+Dynamic meta
+JSON-LD schema
+Sitemap generation
+MODULE 7: CONTENT MANAGEMENT (CMS LITE)
+
+DB Schema
+
+
+
+
+content_blocks
+- id
+- key
+- value
+- page
+Backend
+
+
+
+
+GET /api/content/:page
+POST /api/content
+Frontend
+
+Dynamic rendering of homepage sections
+MODULE 8: MEDIA MANAGEMENT (FIREBASE)
+
+Firebase Setup
+
+Firebase Storage bucket
+Service account (backend only)
+Upload Flow
+
+
+
+
+Admin → Upload
+→ Backend → Firebase Storage
+→ URL stored in DB
+Backend
+
+
+
+
+POST /api/media/upload
+Security
+
+Signed uploads
+Validate file types
+MODULE 9: APPLY SYSTEM (END-TO-END)
+
+DB Schema
+
+
+
+
+applications
+- id
+- name
+- email
+- phone
+- answers JSON
+- created_at
+Backend
+
+
+
+
+POST /api/apply
+GET  /api/applications
+Frontend
+
+Form with validation
+Success message
+MODULE 10: SECURITY
+
+Backend
+
+JWT auth (admin)
+Role-based middleware
+Input validation
+Rate limiting
+Frontend
+
+Protected admin routes
+Token storage (secure cookies)
+MODULE 11: PERFORMANCE & SCALABILITY
+
+Strategies
+
+SSR + ISR (Next.js)
+Firebase CDN for media
+DB indexing:
+slug
+program_id
+Lazy loading
+MODULE 12: ANALYTICS
+
+Integration
+
+Google Analytics
+Tracking
+
+Page views
+Apply clicks
+Program clicks
+MODERN UI DESIGN PRINCIPLES
+
+1. Layout
+
+Max width: 1280px
+Section spacing: 80–120px
+2. Typography
+
+Headings: bold + large
+Body: 16–18px
+3. UX
+
+CTA every 2–3 sections
+Clear storytelling
+No clutter
+4. Components
+
+Reusable
+Accessible
+Responsive

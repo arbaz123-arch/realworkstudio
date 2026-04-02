@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --admin-bg: #f8fafc;
+  --admin-sidebar: #0f172a;
+  --admin-sidebar-muted: #94a3b8;
+  --admin-border: #e2e8f0;
+  --admin-accent: #2563eb;
+}
+
+body {
+  background-color: var(--admin-bg);
+  color: #0f172a;
+}

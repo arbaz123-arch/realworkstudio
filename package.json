@@ -1,0 +1,27 @@
+{
+  "name": "realworkstudio",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n web,api -c blue,green \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:all": "concurrently -n web,api,admin -c blue,green,magenta \"npm run dev:web\" \"npm run dev:api\" \"npm run dev:admin\"",
+    "dev:web": "npm run dev -w @realworkstudio/web",
+    "dev:api": "npm run dev -w @realworkstudio/api",
+    "dev:admin": "npm run dev -w @realworkstudio/admin",
+    "build": "npm run build -w @realworkstudio/web && npm run build -w @realworkstudio/api && npm run build -w @realworkstudio/admin",
+    "lint": "npm run lint -w @realworkstudio/web && npm run lint -w @realworkstudio/api && npm run lint -w @realworkstudio/admin",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
