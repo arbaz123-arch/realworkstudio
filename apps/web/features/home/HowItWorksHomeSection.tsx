@@ -1,30 +1,23 @@
 import Link from 'next/link';
 import { Container, SectionHeading } from '@realworkstudio/ui';
 
-const steps: ReadonlyArray<{ title: string; body: string }> = [
-  {
-    title: 'Pick a track',
-    body: 'Choose a program aligned to the role you want to grow into.',
-  },
-  {
-    title: 'Ship in milestones',
-    body: 'Build in small, reviewable slices — similar to real team cadence.',
-  },
-  {
-    title: 'Publish proof',
-    body: 'Turn work into portfolio artifacts recruiters can click through.',
-  },
-];
+type HowStep = { title: string; body: string };
 
-export function HowItWorksHomeSection() {
+export type HowItWorksHomeSectionProps = {
+  title?: string;
+  description?: string;
+  steps: HowStep[];
+};
+
+export function HowItWorksHomeSection({ title, description, steps }: HowItWorksHomeSectionProps) {
   return (
     <section className="border-t border-[var(--rws-border)] bg-[var(--rws-bg)] py-20 sm:py-28">
       <Container>
         <SectionHeading
           align="center"
           eyebrow="Process"
-          title="How it works"
-          description="A simple loop designed to turn learning into visible outcomes."
+          title={title ?? 'How it works'}
+          description={description ?? 'A simple loop designed to turn learning into visible outcomes.'}
         />
         <div className="mx-auto mt-4 max-w-2xl text-center">
           <Link

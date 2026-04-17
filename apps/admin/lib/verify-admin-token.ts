@@ -1,9 +1,6 @@
 import * as jose from 'jose';
 
-// Middleware runs in Next's Edge environment.
-// Edge bundles reliably inline only `NEXT_PUBLIC_*` env vars, so we read the secret from there.
-const JWT_SECRET =
-  process.env['NEXT_PUBLIC_JWT_SECRET'] ?? process.env['JWT_SECRET'];
+const JWT_SECRET = process.env['JWT_SECRET'];
 
 /**
  * Verifies the admin JWT (same secret as Express API). Used in Edge middleware.

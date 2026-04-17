@@ -1,13 +1,12 @@
 import Link from 'next/link';
 import { Container, SectionHeading } from '@realworkstudio/ui';
+import type { LeaderboardEntry } from '@/types/api';
 
-const mockRows: ReadonlyArray<{ rank: number; name: string; username: string; score: string }> = [
-  { rank: 1, name: 'Example Learner', username: 'example-dev', score: '—' },
-  { rank: 2, name: 'Example Learner', username: 'example-dev-2', score: '—' },
-  { rank: 3, name: 'Example Learner', username: 'example-dev-3', score: '—' },
-];
+export type LeaderboardHomeSectionProps = {
+  entries: LeaderboardEntry[];
+};
 
-export function LeaderboardHomeSection() {
+export function LeaderboardHomeSection({ entries }: LeaderboardHomeSectionProps) {
   return (
     <section className="border-t border-[var(--rws-border)] bg-[var(--rws-bg)] py-20 sm:py-28">
       <Container>
@@ -15,7 +14,7 @@ export function LeaderboardHomeSection() {
           align="center"
           eyebrow="Activity"
           title="GitHub leaderboard"
-          description="A lightweight snapshot of public activity — full GitHub integration lands in Phase 3."
+          description="Public activity leaderboard from RealWorkStudio learning tracks."
         />
         <div className="mx-auto mt-4 max-w-2xl text-center">
           <Link
@@ -36,14 +35,23 @@ export function LeaderboardHomeSection() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--rws-border)]">
-              {mockRows.map((row) => (
-                <tr key={row.rank} className="bg-[var(--rws-bg)]">
-                  <td className="px-6 py-4 text-[var(--rws-fg)]">{row.rank}</td>
+              {entries.map((row, index) => (
+                <tr key={row.id} className="bg-[var(--rws-bg)]">
+                  <td className="px-6 py-4 text-[var(--rws-fg)]">{row.rank ?? index + 1}</td>
                   <td className="px-6 py-4 text-[var(--rws-fg)]">{row.name}</td>
-                  <td className="px-6 py-4 text-[var(--rws-muted)]">@{row.username}</td>
+                  <td className="px-6 py-4 text-[var(--rws-muted)]">
+                    {row.githubUsername ? `@${row.githubUsername}` : '—'}
+                  </td>
                   <td className="px-6 py-4 text-[var(--rws-muted)]">{row.score}</td>
                 </tr>
               ))}
+              {entries.length === 0 ? (
+                <tr className="bg-[var(--rws-bg)]">
+                  <td className="px-6 py-6 text-center text-[var(--rws-muted)]" colSpan={4}>
+                    No leaderboard entries available yet.
+                  </td>
+                </tr>
+              ) : null}
             </tbody>
           </table>
         </div>

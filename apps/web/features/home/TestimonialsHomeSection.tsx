@@ -1,21 +1,12 @@
 import Link from 'next/link';
 import { Container, SectionHeading } from '@realworkstudio/ui';
+import type { Testimonial } from '@/types/api';
 
-const placeholderQuotes: ReadonlyArray<{ quote: string; name: string; role: string }> = [
-  {
-    quote:
-      'Static placeholder — testimonials will load from the API in Phase 3, with media via Firebase when enabled.',
-    name: 'Coming soon',
-    role: 'Learner',
-  },
-  {
-    quote: 'This section is wired for layout only in Phase 1.',
-    name: 'Coming soon',
-    role: 'Learner',
-  },
-];
+export type TestimonialsHomeSectionProps = {
+  testimonials: Testimonial[];
+};
 
-export function TestimonialsHomeSection() {
+export function TestimonialsHomeSection({ testimonials }: TestimonialsHomeSectionProps) {
   return (
     <section className="border-t border-[var(--rws-border)] bg-[var(--rws-surface)] py-20 sm:py-28">
       <Container>
@@ -23,7 +14,7 @@ export function TestimonialsHomeSection() {
           align="center"
           eyebrow="Social proof"
           title="What learners say"
-          description="Real stories will appear here once the testimonials API is connected."
+          description="Stories from learners who have shipped real work."
         />
         <div className="mx-auto mt-4 max-w-2xl text-center">
           <Link
@@ -34,20 +25,26 @@ export function TestimonialsHomeSection() {
           </Link>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-2">
-          {placeholderQuotes.map((item) => (
+          {testimonials.map((item) => (
             <figure
-              key={item.quote}
+              key={item.id}
               className="rounded-2xl border border-[var(--rws-border)] bg-[var(--rws-bg)] p-8"
             >
               <blockquote className="text-base leading-relaxed text-[var(--rws-muted)]">
-                “{item.quote}”
+                “{item.content}”
               </blockquote>
               <figcaption className="mt-6 text-sm">
                 <span className="font-semibold text-[var(--rws-fg)]">{item.name}</span>
-                <span className="text-[var(--rws-muted)]"> · {item.role}</span>
+                <span className="text-[var(--rws-muted)]">
+                  {' '}
+                  · {item.role} at {item.company}
+                </span>
               </figcaption>
             </figure>
           ))}
+          {testimonials.length === 0 ? (
+            <p className="text-sm text-[var(--rws-muted)]">No testimonials available yet.</p>
+          ) : null}
         </div>
       </Container>
     </section>
