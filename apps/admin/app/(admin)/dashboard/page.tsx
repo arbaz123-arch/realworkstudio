@@ -6,12 +6,14 @@ type DashboardStats = {
   totalPrograms: number;
   totalTestimonials: number;
   totalApplications: number;
+  totalLeaderboardEntries: number;
 };
 
 const initialStats: DashboardStats = {
   totalPrograms: 0,
   totalTestimonials: 0,
   totalApplications: 0,
+  totalLeaderboardEntries: 0,
 };
 
 export default function DashboardPage() {
@@ -34,6 +36,7 @@ export default function DashboardPage() {
           totalPrograms: data.totalPrograms,
           totalTestimonials: data.totalTestimonials,
           totalApplications: data.totalApplications,
+          totalLeaderboardEntries: data.totalLeaderboardEntries,
         });
       } catch {
         setError('Network error');
@@ -54,7 +57,7 @@ export default function DashboardPage() {
       {error !== null ? <p className="mt-6 text-sm text-red-600">{error}</p> : null}
 
       {!loading && error === null ? (
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        <div className="mt-8 grid gap-4 sm:grid-cols-4">
           <div className="rounded-xl border border-slate-200 bg-white p-5">
             <p className="text-xs uppercase tracking-wide text-slate-500">Total programs</p>
             <p className="mt-2 text-3xl font-semibold text-slate-900">{stats.totalPrograms}</p>
@@ -66,6 +69,12 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-slate-200 bg-white p-5">
             <p className="text-xs uppercase tracking-wide text-slate-500">Total applications</p>
             <p className="mt-2 text-3xl font-semibold text-slate-900">{stats.totalApplications}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-5">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Leaderboard entries</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">
+              {stats.totalLeaderboardEntries}
+            </p>
           </div>
         </div>
       ) : null}

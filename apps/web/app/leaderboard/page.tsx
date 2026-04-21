@@ -25,6 +25,8 @@ export default async function LeaderboardPage() {
                 <th className="px-5 py-3 font-medium">Rank</th>
                 <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-5 py-3 font-medium">GitHub</th>
+                <th className="px-5 py-3 font-medium">Commits</th>
+                <th className="px-5 py-3 font-medium">Repos</th>
                 <th className="px-5 py-3 font-medium">Score</th>
               </tr>
             </thead>
@@ -36,12 +38,14 @@ export default async function LeaderboardPage() {
                   <td className="px-5 py-3 text-[var(--rws-muted)]">
                     {entry.githubUsername ? `@${entry.githubUsername}` : '—'}
                   </td>
+                  <td className="px-5 py-3 text-[var(--rws-muted)]">{entry.commits}</td>
+                  <td className="px-5 py-3 text-[var(--rws-muted)]">{entry.repos}</td>
                   <td className="px-5 py-3 text-[var(--rws-muted)]">{entry.score}</td>
                 </tr>
               ))}
               {entries.length === 0 ? (
                 <tr className="bg-[var(--rws-bg)]">
-                  <td className="px-5 py-6 text-center text-[var(--rws-muted)]" colSpan={4}>
+                  <td className="px-5 py-6 text-center text-[var(--rws-muted)]" colSpan={6}>
                     No leaderboard entries available.
                   </td>
                 </tr>

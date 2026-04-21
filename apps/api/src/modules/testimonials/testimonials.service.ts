@@ -11,8 +11,14 @@ export type TestimonialDto = {
   name: string;
   role: string;
   company: string;
+  photoUrl: string;
   content: string;
   rating: number;
+  programId: string | null;
+  type: 'text' | 'video';
+  videoUrl: string | null;
+  isFeatured: boolean;
+  isApproved: boolean;
   createdAt: string;
 };
 
@@ -22,8 +28,14 @@ function toDto(row: TestimonialRecord): TestimonialDto {
     name: row.name,
     role: row.role,
     company: row.company,
+    photoUrl: row.photo_url ?? '',
     content: row.content,
     rating: row.rating,
+    programId: row.program_id,
+    type: row.type,
+    videoUrl: row.video_url,
+    isFeatured: row.is_featured,
+    isApproved: row.is_approved,
     createdAt: row.created_at.toISOString(),
   };
 }
@@ -36,8 +48,13 @@ export class TestimonialsService {
     return rows.map(toDto);
   }
 
-  async listPublic(): Promise<TestimonialDto[]> {
-    const rows = await this.repository.list();
+  async listPublic(programId?: string, type?: 'text' | 'video', isFeatured?: boolean): Promise<TestimonialDto[]> {
+    const rows = await this.repository.list({
+      programId,
+      type,
+      isFeatured,
+      isApproved: true,
+    });
     return rows.map(toDto);
   }
 

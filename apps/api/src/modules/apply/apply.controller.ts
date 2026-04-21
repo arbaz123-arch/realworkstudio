@@ -4,7 +4,9 @@ import type { ApplyService } from './apply.service.js';
 type ApplyBody = {
   name: string;
   email: string;
+  phone?: string;
   programId: string;
+  answers?: Record<string, unknown>;
 };
 
 export class ApplyController {

@@ -7,7 +7,16 @@ type Program = {
   title: string;
   slug: string;
   description: string;
+  shortDescription: string;
+  fullDescription: string;
+  thumbnailUrl: string;
+  bannerUrl: string;
   price: number;
+  skills: string[];
+  tools: string[];
+  outcomes: string;
+  displayOrder: number;
+  status: 'ACTIVE' | 'DRAFT';
   createdAt: string;
 };
 
@@ -20,14 +29,32 @@ type ProgramForm = {
   title: string;
   slug: string;
   description: string;
+  shortDescription: string;
+  fullDescription: string;
+  thumbnailUrl: string;
+  bannerUrl: string;
   price: string;
+  skills: string;
+  tools: string;
+  outcomes: string;
+  displayOrder: string;
+  status: 'ACTIVE' | 'DRAFT';
 };
 
 const initialForm: ProgramForm = {
   title: '',
   slug: '',
   description: '',
+  shortDescription: '',
+  fullDescription: '',
+  thumbnailUrl: '',
+  bannerUrl: '',
   price: '0',
+  skills: '',
+  tools: '',
+  outcomes: '',
+  displayOrder: '0',
+  status: 'DRAFT',
 };
 
 export default function ProgramsAdminPage() {
@@ -71,7 +98,16 @@ export default function ProgramsAdminPage() {
       title: item.title,
       slug: item.slug,
       description: item.description,
+      shortDescription: item.shortDescription ?? '',
+      fullDescription: item.fullDescription ?? '',
+      thumbnailUrl: item.thumbnailUrl ?? '',
+      bannerUrl: item.bannerUrl ?? '',
       price: String(item.price),
+      skills: Array.isArray(item.skills) ? item.skills.join(', ') : '',
+      tools: Array.isArray(item.tools) ? item.tools.join(', ') : '',
+      outcomes: item.outcomes ?? '',
+      displayOrder: String(item.displayOrder ?? 0),
+      status: item.status ?? 'DRAFT',
     });
   }
 
@@ -84,7 +120,16 @@ export default function ProgramsAdminPage() {
         title: form.title,
         slug: form.slug,
         description: form.description,
+        shortDescription: form.shortDescription,
+        fullDescription: form.fullDescription,
+        thumbnailUrl: form.thumbnailUrl || null,
+        bannerUrl: form.bannerUrl || null,
         price: Number(form.price),
+        skills: form.skills.split(',').map(s => s.trim()).filter(Boolean),
+        tools: form.tools.split(',').map(s => s.trim()).filter(Boolean),
+        outcomes: form.outcomes,
+        displayOrder: Number(form.displayOrder),
+        status: form.status,
       };
       const endpoint =
         editingId === null ? '/api/admin/programs' : `/api/admin/programs/${editingId}`;
@@ -140,36 +185,132 @@ export default function ProgramsAdminPage() {
         <p className="text-sm font-semibold text-slate-900">
           {editingId === null ? 'Create Program' : 'Edit Program'}
         </p>
-        <input
-          value={form.title}
-          onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-          placeholder="Title"
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-          required
-        />
-        <input
-          value={form.slug}
-          onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
-          placeholder="Slug (optional, auto from title)"
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-        />
-        <textarea
-          value={form.description}
-          onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-          placeholder="Description"
-          className="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm"
-          required
-        />
-        <input
-          value={form.price}
-          onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
-          placeholder="Price"
-          type="number"
-          min="0"
-          step="0.01"
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
-          required
-        />
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Title</label>
+          <input
+            value={form.title}
+            onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+            placeholder="Program title"
+            className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Slug</label>
+          <input
+            value={form.slug}
+            onChange={(e) => setForm((prev) => ({ ...prev, slug: e.target.value }))}
+            placeholder="auto-generated-from-title"
+            className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+          />
+          <p className="mt-1 text-xs text-slate-500">Use lowercase letters, numbers, and hyphens only (e.g., ai-ml-foundation)</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Short Description</label>
+          <input
+            value={form.shortDescription}
+            onChange={(e) => setForm((prev) => ({ ...prev, shortDescription: e.target.value }))}
+            placeholder="Brief summary for cards and previews"
+            className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Full Description</label>
+          <textarea
+            value={form.fullDescription}
+            onChange={(e) => setForm((prev) => ({ ...prev, fullDescription: e.target.value }))}
+            placeholder="Detailed program description"
+            className="mt-1 min-h-28 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Thumbnail URL</label>
+          <input
+            value={form.thumbnailUrl}
+            onChange={(e) => setForm((prev) => ({ ...prev, thumbnailUrl: e.target.value }))}
+            placeholder="https://example.com/thumbnail.jpg"
+            className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Banner URL</label>
+          <input
+            value={form.bannerUrl}
+            onChange={(e) => setForm((prev) => ({ ...prev, bannerUrl: e.target.value }))}
+            placeholder="https://example.com/banner.jpg"
+            className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Price (INR)</label>
+          <input
+            value={form.price}
+            onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
+            placeholder="e.g. 4999"
+            type="number"
+            min="0"
+            step="0.01"
+            className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+            required
+          />
+          <p className="mt-1 text-xs text-slate-500">Enter program price in INR</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-slate-700">Display Order</label>
+            <input
+              value={form.displayOrder}
+              onChange={(e) => setForm((prev) => ({ ...prev, displayOrder: e.target.value }))}
+              placeholder="e.g. 1 (lower number = higher priority)"
+              type="number"
+              min="0"
+              step="1"
+              className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+            />
+            <p className="mt-1 text-xs text-slate-500">Controls display priority (lower appears first)</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700">Status</label>
+            <select
+              value={form.status}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, status: e.target.value as 'ACTIVE' | 'DRAFT' }))
+              }
+              className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+            >
+              <option value="DRAFT">DRAFT</option>
+              <option value="ACTIVE">ACTIVE</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Skills</label>
+          <input
+            value={form.skills}
+            onChange={(e) => setForm((prev) => ({ ...prev, skills: e.target.value }))}
+            placeholder="React, Node.js, TypeScript (comma-separated)"
+            className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Tools</label>
+          <input
+            value={form.tools}
+            onChange={(e) => setForm((prev) => ({ ...prev, tools: e.target.value }))}
+            placeholder="Git, Docker, VS Code (comma-separated)"
+            className="mt-1 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700">Outcomes</label>
+          <textarea
+            value={form.outcomes}
+            onChange={(e) => setForm((prev) => ({ ...prev, outcomes: e.target.value }))}
+            placeholder="What students will learn..."
+            className="mt-1 min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm w-full"
+          />
+          <p className="mt-1 text-xs text-slate-500">Enter learning outcomes (one per line or comma separated)</p>
+        </div>
         <div className="flex gap-2">
           <button
             type="submit"
@@ -198,6 +339,8 @@ export default function ProgramsAdminPage() {
               <tr>
                 <th className="px-4 py-3">Title</th>
                 <th className="px-4 py-3">Slug</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Order</th>
                 <th className="px-4 py-3">Price</th>
                 <th className="px-4 py-3">Actions</th>
               </tr>
@@ -207,6 +350,8 @@ export default function ProgramsAdminPage() {
                 <tr key={item.id} className="border-b border-slate-100">
                   <td className="px-4 py-3">{item.title}</td>
                   <td className="px-4 py-3 text-slate-600">{item.slug}</td>
+                  <td className="px-4 py-3 text-slate-600">{item.status}</td>
+                  <td className="px-4 py-3 text-slate-600">{item.displayOrder}</td>
                   <td className="px-4 py-3">${item.price.toFixed(2)}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
@@ -230,7 +375,7 @@ export default function ProgramsAdminPage() {
               ))}
               {items.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-center text-slate-500" colSpan={4}>
+                  <td className="px-4 py-6 text-center text-slate-500" colSpan={6}>
                     No programs found.
                   </td>
                 </tr>

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { requireAdminAuth } from '../../middleware/require-admin-auth.js';
+import { requireAdminRole } from '../../middleware/require-admin-role.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import type { TestimonialsController } from './testimonials.controller.js';
 import {
@@ -22,7 +23,12 @@ export function createTestimonialsAdminRouter(controller: TestimonialsController
     validateBody(updateTestimonialBodySchema),
     controller.update
   );
-  router.delete('/testimonials/:id', requireAdminAuth, controller.remove);
+  router.delete(
+    '/testimonials/:id',
+    requireAdminAuth,
+    requireAdminRole(['super_admin']),
+    controller.remove
+  );
   return router;
 }
 

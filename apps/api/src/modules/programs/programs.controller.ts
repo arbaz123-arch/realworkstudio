@@ -5,7 +5,16 @@ type CreateProgramBody = {
   title: string;
   slug?: string;
   description: string;
+  shortDescription?: string;
+  fullDescription?: string;
+  thumbnailUrl?: string;
+  bannerUrl?: string;
   price: number;
+  skills?: string[];
+  tools?: string[];
+  outcomes?: string;
+  displayOrder?: number;
+  status?: 'ACTIVE' | 'DRAFT';
 };
 
 type UpdateProgramBody = Partial<CreateProgramBody>;

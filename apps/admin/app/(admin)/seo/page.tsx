@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 
 type HomeContentResponse = {
-  payload: Record<string, unknown>;
+  page: string;
+  metaTitle: string;
+  metaDescription: string;
+  keywords: string;
+  ogImage: string;
   error?: string;
 };
 
@@ -14,20 +18,6 @@ type SeoForm = {
   ogImage: string;
 };
 
-function getSeoFromPayload(payload: Record<string, unknown>): SeoForm {
-  const seoRaw = payload['seo'];
-  if (typeof seoRaw !== 'object' || seoRaw === null) {
-    return { title: '', description: '', keywords: '', ogImage: '' };
-  }
-  const seo = seoRaw as Record<string, unknown>;
-  return {
-    title: typeof seo['title'] === 'string' ? seo['title'] : '',
-    description: typeof seo['description'] === 'string' ? seo['description'] : '',
-    keywords: typeof seo['keywords'] === 'string' ? seo['keywords'] : '',
-    ogImage: typeof seo['ogImage'] === 'string' ? seo['ogImage'] : '',
-  };
-}
-
 export default function SeoAdminPage() {
   const [form, setForm] = useState<SeoForm>({
     title: '',
@@ -35,7 +25,6 @@ export default function SeoAdminPage() {
     keywords: '',
     ogImage: '',
   });
-  const [payload, setPayload] = useState<Record<string, unknown>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,14 +35,22 @@ export default function SeoAdminPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('/api/content/home');
+        const res = await fetch('/api/seo?page=home');
         const data = (await res.json()) as HomeContentResponse;
         if (!res.ok) {
+          if (res.status === 404) {
+            setForm({ title: '', description: '', keywords: '', ogImage: '' });
+            return;
+          }
           setError(typeof data.error === 'string' ? data.error : 'Failed to load SEO data');
           return;
         }
-        setPayload(data.payload);
-        setForm(getSeoFromPayload(data.payload));
+        setForm({
+          title: data.metaTitle ?? '',
+          description: data.metaDescription ?? '',
+          keywords: data.keywords ?? '',
+          ogImage: data.ogImage ?? '',
+        });
       } catch {
         setError('Network error');
       } finally {
@@ -70,26 +67,28 @@ export default function SeoAdminPage() {
     setError(null);
     setSuccess(null);
     try {
-      const nextPayload: Record<string, unknown> = {
-        ...payload,
-        seo: {
-          title: form.title,
-          description: form.description,
+      const res = await fetch('/api/admin/seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          page: 'home',
+          metaTitle: form.title,
+          metaDescription: form.description,
           keywords: form.keywords,
           ogImage: form.ogImage,
-        },
-      };
-      const res = await fetch('/api/admin/content/home', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payload: nextPayload }),
+        }),
       });
       const data = (await res.json()) as HomeContentResponse;
       if (!res.ok) {
         setError(typeof data.error === 'string' ? data.error : 'Failed to save SEO data');
         return;
       }
-      setPayload(data.payload);
+      setForm({
+        title: data.metaTitle ?? form.title,
+        description: data.metaDescription ?? form.description,
+        keywords: data.keywords ?? form.keywords,
+        ogImage: data.ogImage ?? form.ogImage,
+      });
       setSuccess('SEO fields saved.');
     } catch {
       setError('Network error');

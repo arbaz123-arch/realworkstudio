@@ -40,6 +40,10 @@ import {
   createProgramsPublicRouter,
 } from '../modules/programs/programs.routes.js';
 import { ProgramsService } from '../modules/programs/programs.service.js';
+import { SeoController } from '../modules/seo/seo.controller.js';
+import { SeoRepository } from '../modules/seo/seo.repository.js';
+import { createSeoAdminRouter, createSeoPublicRouter } from '../modules/seo/seo.routes.js';
+import { SeoService } from '../modules/seo/seo.service.js';
 import { TestimonialsController } from '../modules/testimonials/testimonials.controller.js';
 import { TestimonialsRepository } from '../modules/testimonials/testimonials.repository.js';
 import {
@@ -82,8 +86,12 @@ export function registerRoutes(app: Express): void {
   const contentController = new ContentController(contentService);
 
   const applyRepository = new ApplyRepository();
-  const applyService = new ApplyService(applyRepository);
+  const applyService = new ApplyService(applyRepository, contentRepository);
   const applyController = new ApplyController(applyService);
+
+  const seoRepository = new SeoRepository();
+  const seoService = new SeoService(seoRepository);
+  const seoController = new SeoController(seoService);
 
   app.use('/api', createHealthRouter(healthController));
   app.use('/api', createProgramsPublicRouter(programsController));
@@ -91,6 +99,7 @@ export function registerRoutes(app: Express): void {
   app.use('/api', createLeaderboardPublicRouter(leaderboardController));
   app.use('/api', createContentPublicRouter(contentController));
   app.use('/api', createApplyRouter(applyController));
+  app.use('/api', createSeoPublicRouter(seoController));
 
   app.use('/api/admin', createAdminAuthRouter(adminAuthController));
   app.use('/api/admin', createDashboardRouter(dashboardController));
@@ -99,4 +108,5 @@ export function registerRoutes(app: Express): void {
   app.use('/api/admin', createLeaderboardAdminRouter(leaderboardController));
   app.use('/api/admin', createMediaAdminRouter(mediaController));
   app.use('/api/admin', createContentAdminRouter(contentController));
+  app.use('/api/admin', createSeoAdminRouter(seoController));
 }

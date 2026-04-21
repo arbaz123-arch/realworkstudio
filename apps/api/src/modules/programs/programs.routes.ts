@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { requireAdminAuth } from '../../middleware/require-admin-auth.js';
+import { requireAdminRole } from '../../middleware/require-admin-role.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import type { ProgramsController } from './programs.controller.js';
 import { createProgramBodySchema, updateProgramBodySchema } from './programs.validation.js';
@@ -19,7 +20,12 @@ export function createProgramsAdminRouter(controller: ProgramsController): Route
     validateBody(updateProgramBodySchema),
     controller.update
   );
-  router.delete('/programs/:id', requireAdminAuth, controller.remove);
+  router.delete(
+    '/programs/:id',
+    requireAdminAuth,
+    requireAdminRole(['super_admin']),
+    controller.remove
+  );
   return router;
 }
 

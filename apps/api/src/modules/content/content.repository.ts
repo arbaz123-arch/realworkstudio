@@ -5,6 +5,12 @@ type ContentHomeRow = {
   updated_at: Date;
 };
 
+type ContentBlockRow = {
+  key: string;
+  value: unknown;
+  updated_at: Date;
+};
+
 export class ContentRepository {
   async getHomePayload(): Promise<Record<string, unknown>> {
     const pool = getPool();
@@ -36,5 +42,38 @@ export class ContentRepository {
       return {};
     }
     return row.payload as Record<string, unknown>;
+  }
+
+  async getBlock(key: string): Promise<Record<string, unknown> | null> {
+    const pool = getPool();
+    const result = await pool.query<ContentBlockRow>(
+      `SELECT "key" AS key, value, updated_at
+       FROM content_blocks
+       WHERE "key" = $1
+       LIMIT 1`,
+      [key]
+    );
+    const row = result.rows[0];
+    if (row === undefined || typeof row.value !== 'object' || row.value === null) {
+      return null;
+    }
+    return row.value as Record<string, unknown>;
+  }
+
+  async upsertBlock(key: string, value: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const pool = getPool();
+    const result = await pool.query<ContentBlockRow>(
+      `INSERT INTO content_blocks ("key", value, updated_at)
+       VALUES ($1, $2::jsonb, NOW())
+       ON CONFLICT ("key")
+       DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+       RETURNING "key" AS key, value, updated_at`,
+      [key, JSON.stringify(value)]
+    );
+    const row = result.rows[0];
+    if (row === undefined || typeof row.value !== 'object' || row.value === null) {
+      return {};
+    }
+    return row.value as Record<string, unknown>;
   }
 }

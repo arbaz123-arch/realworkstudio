@@ -31,8 +31,23 @@ export default async function ProgramsPage() {
               <p className="mt-3 text-sm leading-relaxed text-[var(--rws-muted)]">
                 {program.description}
               </p>
+              {program.skills.length > 0 ? (
+                <div className="mt-4">
+                  <p className="text-sm font-medium text-[var(--rws-fg)]">Skills covered</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {program.skills.slice(0, 8).map((skill) => (
+                      <span
+                        key={skill}
+                        className="rounded-full border border-[var(--rws-border)] bg-[var(--rws-bg)] px-3 py-1 text-xs text-[var(--rws-fg)]"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               <p className="mt-4 text-sm font-medium text-[var(--rws-fg)]">
-                Price: ${program.price.toFixed(2)}
+                Price: ₹{program.price.toFixed(2)}
               </p>
               <Link
                 href={`/programs/${program.slug}`}

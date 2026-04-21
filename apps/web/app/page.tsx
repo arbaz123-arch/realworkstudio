@@ -1,10 +1,10 @@
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import {
-  getHomeContent,
+  getContentBlock,
   getLeaderboard,
   getPrograms,
-  getTestimonials,
+  getFeaturedTestimonials,
 } from '@/lib/api';
 import { AiTrainingSection } from '@/features/home/AiTrainingSection';
 import { FinalCtaSection } from '@/features/home/FinalCtaSection';
@@ -50,17 +50,42 @@ function parseSteps(value: unknown): Array<{ title: string; body: string }> {
 }
 
 export default async function HomePage() {
-  const [contentRes, programsRes, testimonialsRes, leaderboardRes] = await Promise.allSettled([
-    getHomeContent(),
+  const [heroRes, ctaRes, headingsRes, programsRes, testimonialsRes, leaderboardRes] = await Promise.allSettled([
+    getContentBlock('hero'),
+    getContentBlock('cta'),
+    getContentBlock('section_headings'),
     getPrograms(),
-    getTestimonials(),
+    getFeaturedTestimonials(),
     getLeaderboard(),
   ]);
 
-  const contentPayload =
-    contentRes.status === 'fulfilled' ? contentRes.value.payload : ({} as Record<string, unknown>);
+  // Merge content blocks into payload format expected by sections
+  const heroValue = heroRes.status === 'fulfilled' ? heroRes.value.value : {};
+  const ctaValue = ctaRes.status === 'fulfilled' ? ctaRes.value.value : {};
+  const headingsValue = headingsRes.status === 'fulfilled' ? headingsRes.value.value : {};
+
+  const contentPayload: Record<string, unknown> = {
+    // Hero section mappings
+    heroEyebrow: heroValue['eyebrow'],
+    heroTitle: heroValue['title'],
+    heroSubtitle: heroValue['subtitle'],
+    heroPrimaryCtaLabel: heroValue['primaryCtaLabel'],
+    heroPrimaryCtaHref: heroValue['primaryCtaHref'],
+    heroSecondaryCtaLabel: heroValue['secondaryCtaLabel'],
+    heroSecondaryCtaHref: heroValue['secondaryCtaHref'],
+    // CTA section mappings
+    finalCtaTitle: ctaValue['title'],
+    finalCtaDescription: ctaValue['description'],
+    finalCtaPrimaryLabel: ctaValue['primaryLabel'],
+    finalCtaPrimaryHref: ctaValue['primaryHref'],
+    finalCtaSecondaryLabel: ctaValue['secondaryLabel'],
+    finalCtaSecondaryHref: ctaValue['secondaryHref'],
+    // Section headings mappings
+    ...headingsValue,
+  };
   const featuredPrograms = programsRes.status === 'fulfilled' ? programsRes.value : [];
-  const testimonials = testimonialsRes.status === 'fulfilled' ? testimonialsRes.value.slice(0, 4) : [];
+  const testimonials =
+    testimonialsRes.status === 'fulfilled' ? testimonialsRes.value.slice(0, 4) : [];
   const leaderboard = leaderboardRes.status === 'fulfilled' ? leaderboardRes.value.slice(0, 5) : [];
 
   const problemPoints = asStringArray(contentPayload['problemPoints']);

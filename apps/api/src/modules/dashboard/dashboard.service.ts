@@ -4,6 +4,7 @@ export type DashboardResponseDto = {
   totalPrograms: number;
   totalTestimonials: number;
   totalApplications: number;
+  totalLeaderboardEntries: number;
 };
 
 export class DashboardService {
@@ -15,6 +16,7 @@ export class DashboardService {
       totalPrograms: counts.totalPrograms,
       totalTestimonials: counts.totalTestimonials,
       totalApplications: counts.totalApplications,
+      totalLeaderboardEntries: counts.totalLeaderboardEntries,
     };
   }
 }

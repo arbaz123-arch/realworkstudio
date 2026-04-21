@@ -4,6 +4,9 @@ export type Program = {
   slug: string;
   description: string;
   price: number;
+  skills: string[];
+  tools: string[];
+  outcomes: string;
   createdAt: string;
 };
 
@@ -14,6 +17,11 @@ export type Testimonial = {
   company: string;
   content: string;
   rating: number;
+  programId: string | null;
+  type: 'text' | 'video';
+  videoUrl: string | null;
+  isFeatured: boolean;
+  isApproved: boolean;
   createdAt: string;
 };
 
@@ -21,6 +29,8 @@ export type LeaderboardEntry = {
   id: string;
   name: string;
   githubUsername: string | null;
+  commits: number;
+  repos: number;
   score: number;
   rank: number | null;
   notes: string | null;

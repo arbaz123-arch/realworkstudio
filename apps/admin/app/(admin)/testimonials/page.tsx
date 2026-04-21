@@ -7,8 +7,14 @@ type Testimonial = {
   name: string;
   role: string;
   company: string;
+  photoUrl: string;
   content: string;
   rating: number;
+  programId: string | null;
+  type: 'text' | 'video';
+  videoUrl: string | null;
+  isFeatured: boolean;
+  isApproved: boolean;
   createdAt: string;
 };
 
@@ -17,24 +23,42 @@ type TestimonialsResponse = {
   error?: string;
 };
 
+type ProgramOption = {
+  id: string;
+  title: string;
+};
+
 type TestimonialForm = {
   name: string;
   role: string;
   company: string;
+  photoUrl: string;
   content: string;
   rating: string;
+  programId: string;
+  type: 'text' | 'video';
+  videoUrl: string;
+  isFeatured: boolean;
+  isApproved: boolean;
 };
 
 const initialForm: TestimonialForm = {
   name: '',
   role: '',
   company: '',
+  photoUrl: '',
   content: '',
   rating: '5',
+  programId: '',
+  type: 'text',
+  videoUrl: '',
+  isFeatured: false,
+  isApproved: true,
 };
 
 export default function TestimonialsAdminPage() {
   const [items, setItems] = useState<Testimonial[]>([]);
+  const [programs, setPrograms] = useState<ProgramOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -59,8 +83,21 @@ export default function TestimonialsAdminPage() {
     }
   }
 
+  async function loadPrograms() {
+    try {
+      const res = await fetch('/api/admin/programs');
+      const data = (await res.json()) as { items: ProgramOption[] };
+      if (res.ok) {
+        setPrograms(data.items);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   useEffect(() => {
     void loadTestimonials();
+    void loadPrograms();
   }, []);
 
   function resetForm() {
@@ -74,8 +111,14 @@ export default function TestimonialsAdminPage() {
       name: item.name,
       role: item.role,
       company: item.company,
+      photoUrl: item.photoUrl ?? '',
       content: item.content,
       rating: String(item.rating),
+      programId: item.programId ?? '',
+      type: item.type,
+      videoUrl: item.videoUrl ?? '',
+      isFeatured: item.isFeatured,
+      isApproved: item.isApproved,
     });
   }
 
@@ -88,8 +131,14 @@ export default function TestimonialsAdminPage() {
         name: form.name,
         role: form.role,
         company: form.company,
-        content: form.content,
+        photoUrl: form.photoUrl || null,
+        content: form.type === 'text' ? form.content : form.content || '',
         rating: Number(form.rating),
+        programId: form.programId || null,
+        type: form.type,
+        videoUrl: form.type === 'video' ? form.videoUrl || null : null,
+        isFeatured: form.isFeatured,
+        isApproved: form.isApproved,
       };
       const endpoint =
         editingId === null ? '/api/admin/testimonials' : `/api/admin/testimonials/${editingId}`;
@@ -166,12 +215,11 @@ export default function TestimonialsAdminPage() {
           className="rounded-md border border-slate-300 px-3 py-2 text-sm"
           required
         />
-        <textarea
-          value={form.content}
-          onChange={(e) => setForm((prev) => ({ ...prev, content: e.target.value }))}
-          placeholder="Content"
-          className="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm"
-          required
+        <input
+          value={form.photoUrl}
+          onChange={(e) => setForm((prev) => ({ ...prev, photoUrl: e.target.value }))}
+          placeholder="Photo URL (optional)"
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
         />
         <input
           value={form.rating}
@@ -183,6 +231,70 @@ export default function TestimonialsAdminPage() {
           className="rounded-md border border-slate-300 px-3 py-2 text-sm"
           required
         />
+        <select
+          value={form.programId}
+          onChange={(e) => setForm((prev) => ({ ...prev, programId: e.target.value }))}
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+        >
+          <option value="">No program</option>
+          {programs.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.title}
+            </option>
+          ))}
+        </select>
+        <select
+          value={form.type}
+          onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value as 'text' | 'video' }))}
+          className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+        >
+          <option value="text">Text</option>
+          <option value="video">Video</option>
+        </select>
+        {form.type === 'text' ? (
+          <textarea
+            value={form.content}
+            onChange={(e) => setForm((prev) => ({ ...prev, content: e.target.value }))}
+            placeholder="Content"
+            className="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm"
+            required
+          />
+        ) : null}
+        {form.type === 'video' ? (
+          <>
+            <input
+              value={form.videoUrl}
+              onChange={(e) => setForm((prev) => ({ ...prev, videoUrl: e.target.value }))}
+              placeholder="Video URL"
+              className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              required
+            />
+            <textarea
+              value={form.content}
+              onChange={(e) => setForm((prev) => ({ ...prev, content: e.target.value }))}
+              placeholder="Caption (optional)"
+              className="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm"
+            />
+          </>
+        ) : null}
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.isFeatured}
+              onChange={(e) => setForm((prev) => ({ ...prev, isFeatured: e.target.checked }))}
+            />
+            Featured
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.isApproved}
+              onChange={(e) => setForm((prev) => ({ ...prev, isApproved: e.target.checked }))}
+            />
+            Approved
+          </label>
+        </div>
         <div className="flex gap-2">
           <button
             type="submit"
@@ -215,8 +327,9 @@ export default function TestimonialsAdminPage() {
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Role</th>
-                <th className="px-4 py-3">Company</th>
-                <th className="px-4 py-3">Rating</th>
+                <th className="px-4 py-3">Type</th>
+                <th className="px-4 py-3">Featured</th>
+                <th className="px-4 py-3">Approved</th>
                 <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
@@ -225,8 +338,9 @@ export default function TestimonialsAdminPage() {
                 <tr key={item.id} className="border-b border-slate-100">
                   <td className="px-4 py-3">{item.name}</td>
                   <td className="px-4 py-3">{item.role}</td>
-                  <td className="px-4 py-3">{item.company}</td>
-                  <td className="px-4 py-3">{item.rating}</td>
+                  <td className="px-4 py-3">{item.type}</td>
+                  <td className="px-4 py-3">{item.isFeatured ? 'Yes' : 'No'}</td>
+                  <td className="px-4 py-3">{item.isApproved ? 'Yes' : 'No'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       <button
@@ -249,7 +363,7 @@ export default function TestimonialsAdminPage() {
               ))}
               {items.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6 text-center text-slate-500" colSpan={5}>
+                  <td className="px-4 py-6 text-center text-slate-500" colSpan={6}>
                     No testimonials found.
                   </td>
                 </tr>

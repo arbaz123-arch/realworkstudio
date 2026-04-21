@@ -8,26 +8,47 @@ type SyncResult = {
     id: string;
     name: string;
     githubUsername: string | null;
+    commits: number;
+    repos: number;
     score: number;
     rank: number | null;
   }>;
   error?: string;
 };
 
-const sampleJson = JSON.stringify(
+type Mode = 'github' | 'manual';
+
+const sampleGithubJson = JSON.stringify(
   [
-    { name: 'Aarav', githubUsername: 'aarav-dev', score: 95, rank: 1, notes: 'Top performer' },
-    { name: 'Meera', githubUsername: 'meera-dev', score: 89, rank: 2, notes: '' },
+    { name: 'Aarav', githubUsername: 'aarav-dev', notes: 'Top performer' },
+    { name: 'Meera', githubUsername: 'meera-dev', notes: '' },
+  ],
+  null,
+  2
+);
+
+const sampleManualJson = JSON.stringify(
+  [
+    { name: 'Aarav', score: 390, rank: 1, notes: 'Top performer' },
+    { name: 'Meera', score: 310, rank: 2, notes: '' },
   ],
   null,
   2
 );
 
 export default function LeaderboardAdminPage() {
-  const [entriesText, setEntriesText] = useState(sampleJson);
+  const [mode, setMode] = useState<Mode>('github');
+  const [entriesText, setEntriesText] = useState(sampleGithubJson);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<SyncResult | null>(null);
+
+  function onModeChange(next: Mode) {
+    setMode(next);
+    setResult(null);
+    setError(null);
+    setEntriesText(next === 'github' ? sampleGithubJson : sampleManualJson);
+  }
 
   async function onSync() {
     setSaving(true);
@@ -57,11 +78,40 @@ export default function LeaderboardAdminPage() {
     <div>
       <h1 className="text-2xl font-semibold text-slate-900">Leaderboard</h1>
       <p className="mt-2 text-sm text-slate-600">
-        Sync leaderboard entries (placeholder mode for now).
+        Sync leaderboard entries using GitHub public data or manual override.
       </p>
 
       <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm font-semibold text-slate-900">Mode</p>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="radio"
+              name="leaderboard-mode"
+              value="github"
+              checked={mode === 'github'}
+              onChange={() => onModeChange('github')}
+            />
+            GitHub Mode
+          </label>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="radio"
+              name="leaderboard-mode"
+              value="manual"
+              checked={mode === 'manual'}
+              onChange={() => onModeChange('manual')}
+            />
+            Manual Mode
+          </label>
+        </div>
+
         <p className="text-sm font-semibold text-slate-900">Entries JSON</p>
+        <p className="mt-1 text-xs text-slate-600">
+          {mode === 'github'
+            ? 'Provide name + githubUsername. Commits/repos/score/rank are computed and stored.'
+            : 'Provide name + score (and optional rank/notes).'}
+        </p>
         <textarea
           value={entriesText}
           onChange={(e) => setEntriesText(e.target.value)}

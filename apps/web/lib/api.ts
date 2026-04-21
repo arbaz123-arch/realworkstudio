@@ -12,7 +12,14 @@ const API_URL = process.env['API_URL'] ?? 'http://localhost:4000';
 type ApplyBody = {
   name: string;
   email: string;
+  phone?: string;
   programId: string;
+  answers?: Record<string, unknown>;
+};
+
+export type ContentBlock = {
+  key: string;
+  value: Record<string, unknown>;
 };
 
 export class ApiError extends Error {
@@ -46,6 +53,10 @@ export async function getHomeContent(): Promise<HomeContent> {
   return requestJson<HomeContent>('/api/content/home');
 }
 
+export async function getContentBlock(key: string): Promise<ContentBlock> {
+  return requestJson<ContentBlock>(`/api/content/${key}`);
+}
+
 export async function getPrograms(): Promise<Program[]> {
   const data = await requestJson<ProgramsResponse>('/api/programs');
   return data.items;
@@ -55,8 +66,24 @@ export async function getProgramBySlug(slug: string): Promise<Program> {
   return requestJson<Program>(`/api/programs/${slug}`);
 }
 
-export async function getTestimonials(): Promise<Testimonial[]> {
-  const data = await requestJson<TestimonialsResponse>('/api/testimonials');
+type TestimonialsQuery = {
+  programId?: string;
+  type?: 'text' | 'video';
+  isFeatured?: boolean;
+};
+
+export async function getTestimonials(query?: TestimonialsQuery): Promise<Testimonial[]> {
+  const params = new URLSearchParams();
+  if (query?.programId) params.set('programId', query.programId);
+  if (query?.type) params.set('type', query.type);
+  if (query?.isFeatured === true) params.set('isFeatured', 'true');
+  const suffix = params.toString() ? `?${params.toString()}` : '';
+  const data = await requestJson<TestimonialsResponse>(`/api/testimonials${suffix}`);
+  return data.items;
+}
+
+export async function getFeaturedTestimonials(): Promise<Testimonial[]> {
+  const data = await requestJson<TestimonialsResponse>('/api/testimonials?isFeatured=true');
   return data.items;
 }
 

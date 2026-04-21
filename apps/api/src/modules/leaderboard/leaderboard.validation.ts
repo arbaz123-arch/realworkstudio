@@ -6,7 +6,9 @@ export const leaderboardSyncBodySchema = Joi.object({
       Joi.object({
         name: Joi.string().trim().min(2).max(255).required(),
         githubUsername: Joi.string().trim().max(255).allow('', null).optional(),
-        score: Joi.number().integer().min(0).required(),
+        commits: Joi.number().integer().min(0).optional(),
+        repos: Joi.number().integer().min(0).optional(),
+        score: Joi.number().integer().min(0).optional(),
         rank: Joi.number().integer().min(1).optional(),
         notes: Joi.string().trim().allow('').optional(),
       })

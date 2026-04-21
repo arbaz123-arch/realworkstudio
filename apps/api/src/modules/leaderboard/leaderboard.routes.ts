@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { requireAdminAuth } from '../../middleware/require-admin-auth.js';
+import { requireAdminRole } from '../../middleware/require-admin-role.js';
 import { validateBody } from '../../middleware/validate-body.js';
 import type { LeaderboardController } from './leaderboard.controller.js';
 import { leaderboardSyncBodySchema } from './leaderboard.validation.js';
@@ -9,6 +10,7 @@ export function createLeaderboardAdminRouter(controller: LeaderboardController):
   router.post(
     '/leaderboard/sync',
     requireAdminAuth,
+    requireAdminRole(['super_admin']),
     validateBody(leaderboardSyncBodySchema),
     controller.sync
   );

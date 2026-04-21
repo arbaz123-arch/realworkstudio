@@ -34,6 +34,7 @@ export const env = {
   bcryptRounds: parseBcryptRounds(process.env['BCRYPT_ROUNDS']),
   adminOrigin: process.env['ADMIN_ORIGIN'] ?? 'http://localhost:3001',
   webOrigin: process.env['WEB_ORIGIN'] ?? 'http://localhost:3000',
+  cloudinaryUrl: process.env['CLOUDINARY_URL'] ?? '',
 } as const;
 
 // ✅ Check JWT

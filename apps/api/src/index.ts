@@ -1,8 +1,11 @@
 import { createApp } from './app.js';
 import { env } from './config/env.js';
+import { startLeaderboardDailySync } from './modules/leaderboard/leaderboard.scheduler.js';
 
 const app = createApp();
 
 app.listen(env.port, () => {
   console.log(`API listening on http://localhost:${env.port}`);
 });
+
+startLeaderboardDailySync();

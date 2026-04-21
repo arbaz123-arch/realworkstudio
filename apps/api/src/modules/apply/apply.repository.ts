@@ -8,15 +8,19 @@ export type ApplicationRecord = {
   id: string;
   name: string;
   email: string;
+  phone: string | null;
   program_id: string;
   status: string;
+  answers: Record<string, unknown>;
   created_at: Date;
 };
 
 export type CreateApplicationInput = {
   name: string;
   email: string;
+  phone?: string;
   programId: string;
+  answers?: Record<string, unknown>;
 };
 
 export class ApplyRepository {
@@ -32,10 +36,10 @@ export class ApplyRepository {
   async createApplication(input: CreateApplicationInput): Promise<ApplicationRecord> {
     const pool = getPool();
     const result = await pool.query<ApplicationRecord>(
-      `INSERT INTO applications (name, email, program_id, status)
-       VALUES ($1, $2, $3, 'pending')
-       RETURNING id, name, email, program_id, status, created_at`,
-      [input.name, input.email, input.programId]
+      `INSERT INTO applications (name, email, phone, program_id, status, answers)
+       VALUES ($1, $2, $3, $4, 'pending', $5)
+       RETURNING id, name, email, phone, program_id, status, answers, created_at`,
+      [input.name, input.email, input.phone ?? null, input.programId, JSON.stringify(input.answers ?? {})]
     );
     const row = result.rows[0];
     if (row === undefined) {
