@@ -35,6 +35,12 @@ export const env = {
   adminOrigin: process.env['ADMIN_ORIGIN'] ?? 'http://localhost:3001',
   webOrigin: process.env['WEB_ORIGIN'] ?? 'http://localhost:3000',
   cloudinaryUrl: process.env['CLOUDINARY_URL'] ?? '',
+  githubToken: process.env['GITHUB_TOKEN'] ?? '',
+  // Firebase Storage configuration (Module 8)
+  firebaseProjectId: process.env['FIREBASE_PROJECT_ID'] ?? '',
+  firebasePrivateKey: process.env['FIREBASE_PRIVATE_KEY'] ?? '',
+  firebaseClientEmail: process.env['FIREBASE_CLIENT_EMAIL'] ?? '',
+  firebaseStorageBucket: process.env['FIREBASE_STORAGE_BUCKET'] ?? '',
 } as const;
 
 // ✅ Check JWT
@@ -49,4 +55,14 @@ export function assertDatabaseConfigured(): void {
   if (!env.databaseUrl) {
     throw new Error('DATABASE_URL is not configured');
   }
+}
+
+// ✅ Check Firebase (optional - falls back to mock if not configured)
+export function isFirebaseConfigured(): boolean {
+  return !!(
+    env.firebaseProjectId &&
+    env.firebasePrivateKey &&
+    env.firebaseClientEmail &&
+    env.firebaseStorageBucket
+  );
 }

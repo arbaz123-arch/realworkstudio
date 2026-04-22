@@ -24,6 +24,8 @@ export type TestimonialFilters = {
   type?: 'text' | 'video';
   isFeatured?: boolean;
   isApproved?: boolean;
+  limit?: number;
+  offset?: number;
 };
 
 export class TestimonialsRepository {
@@ -50,11 +52,23 @@ export class TestimonialsRepository {
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const limitClause = filters?.limit !== undefined ? `LIMIT $${conditions.length + 1}` : '';
+    const offsetClause = filters?.offset !== undefined ? `OFFSET $${conditions.length + (filters?.limit !== undefined ? 2 : 1)}` : '';
+
+    if (filters?.limit !== undefined) {
+      values.push(String(filters.limit));
+    }
+    if (filters?.offset !== undefined) {
+      values.push(String(filters.offset));
+    }
+
     const result = await pool.query<TestimonialRecord>(
       `SELECT id, name, role, company, photo_url, content, rating, program_id, type, video_url, is_featured, is_approved, created_at
        FROM testimonials
        ${whereClause}
-       ORDER BY created_at DESC`,
+       ORDER BY is_featured DESC, created_at DESC
+       ${limitClause}
+       ${offsetClause}`,
       values
     );
     return result.rows;

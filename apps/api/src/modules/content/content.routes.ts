@@ -7,6 +7,7 @@ import { saveContentBlockBodySchema, updateHomeContentBodySchema } from './conte
 export function createContentPublicRouter(controller: ContentController): Router {
   const router = Router();
   router.get('/content/home', controller.getHomeContent);
+  router.get('/content/page/:page', controller.getPageContent);
   router.get('/content/:key', controller.getBlock);
   return router;
 }
@@ -25,5 +26,7 @@ export function createContentAdminRouter(controller: ContentController): Router 
     validateBody(saveContentBlockBodySchema),
     controller.saveBlock
   );
+  // Cache revalidation endpoint for Next.js ISR
+  router.post('/content/revalidate/:page', requireAdminAuth, controller.revalidatePage);
   return router;
 }

@@ -10,6 +10,7 @@ const nav: ReadonlyArray<{ href: string; label: string }> = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/programs', label: 'Programs' },
   { href: '/testimonials', label: 'Testimonials' },
+  { href: '/applications', label: 'Applications' },
   { href: '/leaderboard', label: 'Leaderboard' },
   { href: '/seo', label: 'SEO' },
   { href: '/content', label: 'Content' },

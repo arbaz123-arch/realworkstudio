@@ -29,8 +29,8 @@ function slugify(input: string): string {
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
+    .replace(/[\s-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function toDto(row: ProgramRecord): ProgramDto {
@@ -56,6 +56,22 @@ function toDto(row: ProgramRecord): ProgramDto {
 export class ProgramsService {
   constructor(private readonly repository: ProgramsRepository) {}
 
+  private async getUniqueSlug(baseSlug: string, excludeId?: string): Promise<string> {
+    let slug = baseSlug;
+    let counter = 1;
+    while (true) {
+      const existing = excludeId
+        ? await this.repository.findBySlugExceptId(slug, excludeId)
+        : await this.repository.findBySlug(slug);
+      
+      if (!existing) {
+        return slug;
+      }
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+  }
+
   async listAdmin(): Promise<ProgramDto[]> {
     const rows = await this.repository.list();
     return rows.map(toDto);
@@ -75,11 +91,8 @@ export class ProgramsService {
   }
 
   async create(input: Omit<CreateProgramInput, 'slug'> & { slug?: string }): Promise<ProgramDto> {
-    const slug = slugify(input.slug ?? input.title);
-    const existing = await this.repository.findBySlug(slug);
-    if (existing !== null) {
-      throw new HttpError(409, 'Program slug already exists');
-    }
+    const baseSlug = slugify(input.slug ?? input.title);
+    const slug = await this.getUniqueSlug(baseSlug);
 
     const fullDescription =
       input.fullDescription !== undefined && input.fullDescription.trim() !== ''
@@ -113,17 +126,14 @@ export class ProgramsService {
       throw new HttpError(404, 'Program not found');
     }
 
-    const nextSlug =
-      input.slug !== undefined
+    const nextBaseSlug =
+      input.slug !== undefined && input.slug.trim() !== ''
         ? slugify(input.slug)
-        : input.title !== undefined
+        : input.title !== undefined && input.title.trim() !== ''
           ? slugify(input.title)
           : current.slug;
 
-    const duplicate = await this.repository.findBySlugExceptId(nextSlug, id);
-    if (duplicate !== null) {
-      throw new HttpError(409, 'Program slug already exists');
-    }
+    const nextSlug = await this.getUniqueSlug(nextBaseSlug, id);
 
     const nextDescription = input.description ?? current.description;
     const nextFullDescription =

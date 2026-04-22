@@ -5,8 +5,26 @@ import { SiteHeader } from '@/components/layout/SiteHeader';
 import { getPrograms } from '@/lib/api';
 
 export const metadata: Metadata = {
-  title: 'Programs',
-  description: 'Browse RealWorkStudio programs and choose your track.',
+  title: 'Programs | RealWorkStudio - Project-Based Coding Training',
+  description:
+    'Explore our project-based coding programs. Learn AI development, full-stack engineering, and build real-world projects that employers trust.',
+  keywords: [
+    'coding programs',
+    'AI developer training',
+    'full-stack training',
+    'project-based learning',
+    'software development courses',
+    'coding bootcamp India',
+    'developer training programs',
+  ],
+  openGraph: {
+    title: 'Programs | RealWorkStudio',
+    description: 'Explore our project-based coding programs and build real-world projects.',
+    type: 'website',
+  },
+  alternates: {
+    canonical: '/programs',
+  },
 };
 
 export default async function ProgramsPage() {

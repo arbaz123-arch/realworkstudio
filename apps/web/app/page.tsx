@@ -1,7 +1,9 @@
+import type { Metadata } from 'next';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
+import { StructuredData, createOrganizationSchema, createWebPageSchema } from '@/components/seo/StructuredData';
 import {
-  getContentBlock,
+  getPageContent,
   getLeaderboard,
   getPrograms,
   getFeaturedTestimonials,
@@ -40,6 +42,49 @@ function asObjectArray(
   );
 }
 
+// ISR: Revalidate page every 60 seconds to refresh CMS content
+export const revalidate = 60;
+
+export const metadata: Metadata = {
+  title: 'RealWorkStudio | Real Developer Training with Real Projects',
+  description:
+    'Ship real projects. Build a portfolio employers trust. Join RealWorkStudio for project-based coding training and become a job-ready developer.',
+  keywords: [
+    'real developer training',
+    'project-based coding training',
+    'AI developer training India',
+    'company-style learning',
+    'coding bootcamp',
+    'software development training',
+    'portfolio building',
+    'job-ready developers',
+  ],
+  openGraph: {
+    title: 'RealWorkStudio | Real Developer Training with Real Projects',
+    description:
+      'Ship real projects. Build a portfolio employers trust. Join RealWorkStudio for project-based coding training.',
+    type: 'website',
+    locale: 'en_IN',
+    siteName: 'RealWorkStudio',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'RealWorkStudio | Real Developer Training',
+    description: 'Ship real projects. Build a portfolio employers trust.',
+  },
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+};
+
 function parseSteps(value: unknown): Array<{ title: string; body: string }> {
   return asObjectArray(value)
     .map((item) => ({
@@ -50,19 +95,18 @@ function parseSteps(value: unknown): Array<{ title: string; body: string }> {
 }
 
 export default async function HomePage() {
-  const [heroRes, ctaRes, headingsRes, programsRes, testimonialsRes, leaderboardRes] = await Promise.allSettled([
-    getContentBlock('hero'),
-    getContentBlock('cta'),
-    getContentBlock('section_headings'),
+  const [pageContentRes, programsRes, testimonialsRes, leaderboardRes] = await Promise.allSettled([
+    getPageContent('home'),
     getPrograms(),
     getFeaturedTestimonials(),
     getLeaderboard(),
   ]);
 
-  // Merge content blocks into payload format expected by sections
-  const heroValue = heroRes.status === 'fulfilled' ? heroRes.value.value : {};
-  const ctaValue = ctaRes.status === 'fulfilled' ? ctaRes.value.value : {};
-  const headingsValue = headingsRes.status === 'fulfilled' ? headingsRes.value.value : {};
+  // Extract blocks from page content response
+  const pageContent = pageContentRes.status === 'fulfilled' ? pageContentRes.value.blocks : {};
+  const heroValue = pageContent['hero'] ?? {};
+  const ctaValue = pageContent['cta'] ?? {};
+  const headingsValue = pageContent['section_headings'] ?? {};
 
   const contentPayload: Record<string, unknown> = {
     // Hero section mappings
@@ -95,8 +139,17 @@ export default async function HomePage() {
   const aiPractices = asStringArray(contentPayload['aiTrainingPractices']);
   const exposureItems = parseSteps(contentPayload['realWorkExposureItems']);
 
+  const baseUrl = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://realworkstudio.com';
+  const organizationSchema = createOrganizationSchema(baseUrl);
+  const webPageSchema = createWebPageSchema(
+    'RealWorkStudio | Real Developer Training',
+    'Ship real projects. Build a portfolio employers trust.',
+    baseUrl
+  );
+
   return (
     <>
+      <StructuredData data={[organizationSchema, webPageSchema]} />
       <SiteHeader />
       <main>
         <HeroSection

@@ -5,8 +5,24 @@ import { ApplyForm } from '@/features/apply/ApplyForm';
 import { getHomeContent, getPrograms } from '@/lib/api';
 
 export const metadata: Metadata = {
-  title: 'Apply',
-  description: 'Submit your application for RealWorkStudio programs.',
+  title: 'Apply Now | Join RealWorkStudio Developer Program',
+  description:
+    'Apply to join RealWorkStudio and start your journey to becoming a job-ready developer. Project-based training with real work exposure.',
+  keywords: [
+    'apply coding bootcamp',
+    'join developer program',
+    'coding training application',
+    'developer training enrollment',
+    'project-based learning signup',
+  ],
+  openGraph: {
+    title: 'Apply Now | Join RealWorkStudio',
+    description: 'Apply to join RealWorkStudio and become a job-ready developer.',
+    type: 'website',
+  },
+  alternates: {
+    canonical: '/apply',
+  },
 };
 
 export default async function ApplyPage() {

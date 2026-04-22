@@ -8,6 +8,12 @@ import { registerRoutes } from './routes/index.js';
 export function createApp(): express.Express {
   const app = express();
 
+  // Request logging middleware
+  app.use((req, res, next) => {
+    console.log(`[Request] ${req.method} ${req.path} - from ${req.headers.referer || 'direct'}`);
+    next();
+  });
+
   app.use(helmet());
   app.use(
     cors({

@@ -4,8 +4,24 @@ import { SiteHeader } from '@/components/layout/SiteHeader';
 import { getHomeContent } from '@/lib/api';
 
 export const metadata: Metadata = {
-  title: 'Why RealWorkStudio',
-  description: 'Why learners choose RealWorkStudio for practical career growth.',
+  title: 'Why RealWorkStudio | Real Developer Training Benefits',
+  description:
+    'Discover why RealWorkStudio is the best choice for real developer training. Project-based learning with measurable outcomes.',
+  keywords: [
+    'why choose RealWorkStudio',
+    'developer training benefits',
+    'project-based coding',
+    'job-ready developer training',
+    'practical coding skills',
+  ],
+  openGraph: {
+    title: 'Why RealWorkStudio | Real Developer Training',
+    description: 'Discover why RealWorkStudio is the best choice for real developer training.',
+    type: 'website',
+  },
+  alternates: {
+    canonical: '/why-realworkstudio',
+  },
 };
 
 function readPoints(payload: Record<string, unknown>, key: string): string[] {

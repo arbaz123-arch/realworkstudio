@@ -4,8 +4,24 @@ import { SiteHeader } from '@/components/layout/SiteHeader';
 import { getHomeContent } from '@/lib/api';
 
 export const metadata: Metadata = {
-  title: 'How It Works',
-  description: 'Understand the RealWorkStudio learning and delivery process.',
+  title: 'How It Works | RealWorkStudio Learning Process',
+  description:
+    'Learn about our project-based learning process. Real work, real projects, and job-ready outcomes.',
+  keywords: [
+    'project-based learning',
+    'coding training process',
+    'developer training methodology',
+    'real work exposure',
+    'company-style learning',
+  ],
+  openGraph: {
+    title: 'How It Works | RealWorkStudio',
+    description: 'Learn about our project-based learning process.',
+    type: 'website',
+  },
+  alternates: {
+    canonical: '/how-it-works',
+  },
 };
 
 function readSteps(payload: Record<string, unknown>): Array<{ title: string; body: string }> {

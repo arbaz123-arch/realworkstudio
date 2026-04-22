@@ -1,38 +1,51 @@
-import { env } from '../../config/env.js';
+import { getPool } from '../../db/pool.js';
 
-type UploadResult = {
-  secure_url: string;
+export type MediaRecord = {
+  id: string;
+  url: string;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  type: string;
+  uploadedBy: string | null;
+  createdAt: Date;
 };
 
-function toPublicId(fileName: string): string {
-  return fileName
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-_/.]/g, '');
-}
+export type CreateMediaInput = {
+  url: string;
+  filename: string;
+  mimeType: string;
+  sizeBytes: number;
+  type: 'image' | 'video';
+  uploadedBy: string | null;
+};
 
 export class MediaRepository {
-  async uploadToCloudinary(fileName: string): Promise<string | null> {
-    if (!env.cloudinaryUrl) {
-      return null;
+  async saveMedia(input: CreateMediaInput): Promise<MediaRecord> {
+    const pool = getPool();
+    const result = await pool.query<MediaRecord>(
+      `INSERT INTO media (url, filename, mime_type, size_bytes, type, uploaded_by, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())
+       RETURNING id, url, filename, mime_type AS "mimeType", size_bytes AS "sizeBytes",
+                 type, uploaded_by AS "uploadedBy", created_at AS "createdAt"`,
+      [input.url, input.filename, input.mimeType, input.sizeBytes, input.type, input.uploadedBy]
+    );
+    const row = result.rows[0];
+    if (row === undefined) {
+      throw new Error('Failed to save media record');
     }
+    return row;
+  }
 
-    const { v2: cloudinary } = await import('cloudinary');
-    cloudinary.config({ cloudinary_url: env.cloudinaryUrl });
-
-    const publicId = `rws/${Date.now()}-${toPublicId(fileName)}`;
-    // 1x1 transparent GIF so we can keep request shape (fileName only) without breaking UI.
-    const tinyGif =
-      'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACwAAAAAAQABAEACAkQBADs=';
-
-    const uploaded = (await cloudinary.uploader.upload(tinyGif, {
-      public_id: publicId,
-      resource_type: 'image',
-      overwrite: true,
-    })) as UploadResult;
-
-    return uploaded.secure_url;
+  async getAllMedia(): Promise<MediaRecord[]> {
+    const pool = getPool();
+    const result = await pool.query<MediaRecord>(
+      `SELECT id, url, filename, mime_type AS "mimeType", size_bytes AS "sizeBytes",
+              type, uploaded_by AS "uploadedBy", created_at AS "createdAt"
+       FROM media
+       ORDER BY created_at DESC`
+    );
+    return result.rows;
   }
 
   async createMockUrl(fileName: string): Promise<string> {

@@ -74,7 +74,9 @@ export class TestimonialsController {
       const programId = typeof req.query['programId'] === 'string' ? req.query['programId'] : undefined;
       const type = req.query['type'] === 'text' || req.query['type'] === 'video' ? req.query['type'] : undefined;
       const isFeatured = req.query['isFeatured'] === 'true' ? true : undefined;
-      const items = await this.service.listPublic(programId, type, isFeatured);
+      const limit = typeof req.query['limit'] === 'string' ? parseInt(req.query['limit'], 10) : undefined;
+      const offset = typeof req.query['offset'] === 'string' ? parseInt(req.query['offset'], 10) : undefined;
+      const items = await this.service.listPublic(programId, type, isFeatured, limit, offset);
       res.status(200).json({ items });
     } catch (err) {
       next(err);

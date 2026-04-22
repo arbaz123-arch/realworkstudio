@@ -49,14 +49,15 @@ export class LeaderboardService {
   async sync(entries: ReplaceLeaderboardEntry[]): Promise<LeaderboardSyncResponseDto> {
     const resolved: ReplaceLeaderboardEntry[] = [];
 
-    for (const entry of entries) {
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
       const username =
         typeof entry.githubUsername === 'string' && entry.githubUsername.trim() !== ''
           ? entry.githubUsername.trim()
           : null;
 
       if (username) {
-        const stats = await githubService.fetchUserStats(username);
+        const stats = await githubService.fetchUserStats(username, i);
         if (stats) {
           resolved.push({
             name: entry.name,

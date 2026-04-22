@@ -8,6 +8,7 @@ type ContentHomeRow = {
 type ContentBlockRow = {
   key: string;
   value: unknown;
+  page: string;
   updated_at: Date;
 };
 
@@ -44,14 +45,14 @@ export class ContentRepository {
     return row.payload as Record<string, unknown>;
   }
 
-  async getBlock(key: string): Promise<Record<string, unknown> | null> {
+  async getBlock(key: string, page = 'home'): Promise<Record<string, unknown> | null> {
     const pool = getPool();
     const result = await pool.query<ContentBlockRow>(
-      `SELECT "key" AS key, value, updated_at
+      `SELECT "key" AS key, value, page, updated_at
        FROM content_blocks
-       WHERE "key" = $1
+       WHERE "key" = $1 AND page = $2
        LIMIT 1`,
-      [key]
+      [key, page]
     );
     const row = result.rows[0];
     if (row === undefined || typeof row.value !== 'object' || row.value === null) {
@@ -60,15 +61,36 @@ export class ContentRepository {
     return row.value as Record<string, unknown>;
   }
 
-  async upsertBlock(key: string, value: Record<string, unknown>): Promise<Record<string, unknown>> {
+  async getBlocksByPage(page: string): Promise<Record<string, Record<string, unknown>>> {
     const pool = getPool();
     const result = await pool.query<ContentBlockRow>(
-      `INSERT INTO content_blocks ("key", value, updated_at)
-       VALUES ($1, $2::jsonb, NOW())
-       ON CONFLICT ("key")
+      `SELECT "key" AS key, value, page, updated_at
+       FROM content_blocks
+       WHERE page = $1`,
+      [page]
+    );
+    const blocks: Record<string, Record<string, unknown>> = {};
+    for (const row of result.rows) {
+      if (typeof row.value === 'object' && row.value !== null) {
+        blocks[row.key] = row.value as Record<string, unknown>;
+      }
+    }
+    return blocks;
+  }
+
+  async upsertBlock(
+    key: string,
+    value: Record<string, unknown>,
+    page = 'home'
+  ): Promise<Record<string, unknown>> {
+    const pool = getPool();
+    const result = await pool.query<ContentBlockRow>(
+      `INSERT INTO content_blocks ("key", value, page, updated_at)
+       VALUES ($1, $2::jsonb, $3, NOW())
+       ON CONFLICT (page, "key")
        DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
-       RETURNING "key" AS key, value, updated_at`,
-      [key, JSON.stringify(value)]
+       RETURNING "key" AS key, value, page, updated_at`,
+      [key, JSON.stringify(value), page]
     );
     const row = result.rows[0];
     if (row === undefined || typeof row.value !== 'object' || row.value === null) {

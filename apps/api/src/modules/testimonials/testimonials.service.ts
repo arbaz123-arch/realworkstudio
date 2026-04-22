@@ -48,12 +48,20 @@ export class TestimonialsService {
     return rows.map(toDto);
   }
 
-  async listPublic(programId?: string, type?: 'text' | 'video', isFeatured?: boolean): Promise<TestimonialDto[]> {
+  async listPublic(
+    programId?: string,
+    type?: 'text' | 'video',
+    isFeatured?: boolean,
+    limit?: number,
+    offset?: number
+  ): Promise<TestimonialDto[]> {
     const rows = await this.repository.list({
       programId,
       type,
       isFeatured,
       isApproved: true,
+      limit,
+      offset,
     });
     return rows.map(toDto);
   }

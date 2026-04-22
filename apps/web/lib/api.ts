@@ -20,6 +20,12 @@ type ApplyBody = {
 export type ContentBlock = {
   key: string;
   value: Record<string, unknown>;
+  page?: string;
+};
+
+export type PageContent = {
+  page: string;
+  blocks: Record<string, Record<string, unknown>>;
 };
 
 export class ApiError extends Error {
@@ -53,8 +59,12 @@ export async function getHomeContent(): Promise<HomeContent> {
   return requestJson<HomeContent>('/api/content/home');
 }
 
-export async function getContentBlock(key: string): Promise<ContentBlock> {
-  return requestJson<ContentBlock>(`/api/content/${key}`);
+export async function getContentBlock(key: string, page = 'home'): Promise<ContentBlock> {
+  return requestJson<ContentBlock>(`/api/content/${key}?page=${encodeURIComponent(page)}`);
+}
+
+export async function getPageContent(page: string): Promise<PageContent> {
+  return requestJson<PageContent>(`/api/content/page/${encodeURIComponent(page)}`);
 }
 
 export async function getPrograms(): Promise<Program[]> {
@@ -70,6 +80,8 @@ type TestimonialsQuery = {
   programId?: string;
   type?: 'text' | 'video';
   isFeatured?: boolean;
+  limit?: number;
+  offset?: number;
 };
 
 export async function getTestimonials(query?: TestimonialsQuery): Promise<Testimonial[]> {
@@ -77,13 +89,15 @@ export async function getTestimonials(query?: TestimonialsQuery): Promise<Testim
   if (query?.programId) params.set('programId', query.programId);
   if (query?.type) params.set('type', query.type);
   if (query?.isFeatured === true) params.set('isFeatured', 'true');
+  if (query?.limit !== undefined) params.set('limit', String(query.limit));
+  if (query?.offset !== undefined) params.set('offset', String(query.offset));
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const data = await requestJson<TestimonialsResponse>(`/api/testimonials${suffix}`);
   return data.items;
 }
 
-export async function getFeaturedTestimonials(): Promise<Testimonial[]> {
-  const data = await requestJson<TestimonialsResponse>('/api/testimonials?isFeatured=true');
+export async function getFeaturedTestimonials(limit = 6): Promise<Testimonial[]> {
+  const data = await requestJson<TestimonialsResponse>(`/api/testimonials?isFeatured=true&limit=${limit}`);
   return data.items;
 }
 

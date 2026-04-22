@@ -4,8 +4,23 @@ import { SiteHeader } from '@/components/layout/SiteHeader';
 import { getHomeContent } from '@/lib/api';
 
 export const metadata: Metadata = {
-  title: 'About',
-  description: 'About RealWorkStudio and its mission.',
+  title: 'About RealWorkStudio | Our Mission & Vision',
+  description:
+    'Learn about RealWorkStudio\'s mission to make developers job-ready through real project experience.',
+  keywords: [
+    'about RealWorkStudio',
+    'coding training mission',
+    'developer education vision',
+    'project-based learning company',
+  ],
+  openGraph: {
+    title: 'About RealWorkStudio',
+    description: 'Learn about our mission to make developers job-ready.',
+    type: 'website',
+  },
+  alternates: {
+    canonical: '/about',
+  },
 };
 
 export default async function AboutPage() {

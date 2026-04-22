@@ -5,7 +5,7 @@ import { AdminAuthService } from '../modules/admin/auth/admin.service.js';
 import { createAdminAuthRouter } from '../modules/admin/auth/admin.routes.js';
 import { ApplyController } from '../modules/apply/apply.controller.js';
 import { ApplyRepository } from '../modules/apply/apply.repository.js';
-import { createApplyRouter } from '../modules/apply/apply.routes.js';
+import { createApplyRouter, createApplyAdminRouter } from '../modules/apply/apply.routes.js';
 import { ApplyService } from '../modules/apply/apply.service.js';
 import { ContentController } from '../modules/content/content.controller.js';
 import { ContentRepository } from '../modules/content/content.repository.js';
@@ -109,4 +109,5 @@ export function registerRoutes(app: Express): void {
   app.use('/api/admin', createMediaAdminRouter(mediaController));
   app.use('/api/admin', createContentAdminRouter(contentController));
   app.use('/api/admin', createSeoAdminRouter(seoController));
+  app.use('/api/admin', createApplyAdminRouter(applyController));
 }

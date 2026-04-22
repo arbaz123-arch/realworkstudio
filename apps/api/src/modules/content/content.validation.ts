@@ -6,4 +6,5 @@ export const updateHomeContentBodySchema = Joi.object({
 
 export const saveContentBlockBodySchema = Joi.object({
   value: Joi.object().unknown(true).required(),
+  page: Joi.string().max(120).optional(),
 });
