@@ -1,6 +1,26 @@
 import type { Request } from 'express';
 import rateLimit from 'express-rate-limit';
 
+/**
+ * Rate limiter for admin login - 10 attempts per 5 minutes per IP
+ * Prevents brute force attacks on admin authentication
+ */
+export const adminLoginRateLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 10, // 10 attempts per windowMs
+  message: {
+    error: 'Too many login attempts. Please try again later.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    return getClientIp(req as Request);
+  },
+  skip: () => {
+    return process.env.NODE_ENV === 'test';
+  },
+});
+
 function getClientIp(req: Request): string {
   // Check for forwarded IP (behind proxy/Vercel/Nginx)
   const forwarded = req.headers['x-forwarded-for'];
