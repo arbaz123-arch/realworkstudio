@@ -115,7 +115,7 @@ export default async function TestimonialsPage({ searchParams }: TestimonialsPag
               </div>
 
               <blockquote className="text-sm leading-relaxed text-[var(--rws-muted)]">
-                "{item.content}"
+                &ldquo;{item.content}&rdquo;
               </blockquote>
 
               <figcaption className="mt-4 flex items-center gap-3 text-sm">

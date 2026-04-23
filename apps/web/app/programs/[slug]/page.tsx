@@ -144,7 +144,7 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
                     </div>
 
                     <blockquote className="text-sm leading-relaxed text-[var(--rws-muted)]">
-                      "{item.content}"
+                      &ldquo;{item.content}&rdquo;
                     </blockquote>
 
                     <figcaption className="mt-4 flex items-center gap-3 text-sm">

@@ -1,5 +1,5 @@
 import { getPrograms } from '@/lib/api';
-import { MetadataRoute } from 'next';
+import type { MetadataRoute } from 'next';
 
 const BASE_URL = process.env['NEXT_PUBLIC_SITE_URL'] ?? 'https://realworkstudio.com';
 
