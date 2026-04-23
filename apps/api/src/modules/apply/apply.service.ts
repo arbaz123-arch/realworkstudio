@@ -8,12 +8,12 @@ export type ApplyResponseDto = {
   phone: string | null;
   programId: string;
   programName: string | null;
-  status: string;
+  reviewStatus: string; // pending/reviewed/rejected
   answers: Record<string, unknown>;
   createdAt: string;
-  // New fields
+  // Applicant fields
   collegeName: string | null;
-  applicantStatus: string | null;
+  status: string | null; // STUDENT or GRADUATE
   currentYearOrExperience: string | null;
   motivation: string | null;
 };
@@ -55,7 +55,7 @@ export class ApplyService {
   async listApplications(filters: {
     programId?: string;
     programIds?: string[];
-    status?: string;
+    reviewStatus?: string;
     search?: string;
     page?: number;
     limit?: number;
@@ -67,7 +67,7 @@ export class ApplyService {
     const rows = await this.repository.getApplications({
       programId: filters.programId,
       programIds: filters.programIds,
-      status: filters.status,
+      reviewStatus: filters.reviewStatus,
       search: filters.search,
       limit,
       offset,
@@ -75,7 +75,7 @@ export class ApplyService {
     const total = await this.repository.countApplications({
       programId: filters.programId,
       programIds: filters.programIds,
-      status: filters.status,
+      reviewStatus: filters.reviewStatus,
       search: filters.search,
     });
 
@@ -88,14 +88,14 @@ export class ApplyService {
   async exportApplications(filters: {
     programId?: string;
     programIds?: string[];
-    status?: string;
+    reviewStatus?: string;
     search?: string;
   }): Promise<string> {
     // Fetch all matching applications (no pagination for export)
     const rows = await this.repository.getApplications({
       programId: filters.programId,
       programIds: filters.programIds,
-      status: filters.status,
+      reviewStatus: filters.reviewStatus,
       search: filters.search,
       limit: 10000, // Max export limit
       offset: 0,
@@ -114,7 +114,7 @@ export class ApplyService {
         this.escapeCsv(row.email),
         this.escapeCsv(row.phone ?? ''),
         this.escapeCsv(programName ?? ''),
-        this.escapeCsv(row.status),
+        this.escapeCsv(row.review_status ?? ''),
         this.escapeCsv(row.created_at.toISOString()),
       ];
       csvRows.push(csvRow.join(','));
@@ -158,11 +158,11 @@ export class ApplyService {
       phone: row.phone,
       programId: row.program_id,
       programName: row.program_title ?? null,
-      status: row.status,
+      reviewStatus: row.review_status,
       answers: row.answers,
       createdAt: row.created_at.toISOString(),
       collegeName: row.college_name,
-      applicantStatus: row.applicant_status,
+      status: row.status,
       currentYearOrExperience: row.current_year_or_experience,
       motivation: row.motivation,
     };

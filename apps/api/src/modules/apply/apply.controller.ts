@@ -37,12 +37,12 @@ export class ApplyController {
       const programId = req.query.programId as string | undefined;
       const programIdsRaw = req.query.programIds as string | undefined;
       const programIds = programIdsRaw ? programIdsRaw.split(',').filter(id => id.trim() !== '') : undefined;
-      const status = req.query.status as string | undefined;
+      const reviewStatus = req.query.status as string | undefined;
       const search = req.query.search as string | undefined;
       const page = Math.max(1, Number.parseInt(req.query.page as string) || 1);
       const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit as string) || 10));
 
-      const result = await this.service.listApplications({ programId, programIds, status, search, page, limit });
+      const result = await this.service.listApplications({ programId, programIds, reviewStatus, search, page, limit });
       res.status(200).json({
         data: result.applications,
         meta: {
@@ -63,10 +63,10 @@ export class ApplyController {
       const programId = req.query.programId as string | undefined;
       const programIdsRaw = req.query.programIds as string | undefined;
       const programIds = programIdsRaw ? programIdsRaw.split(',').filter(id => id.trim() !== '') : undefined;
-      const status = req.query.status as string | undefined;
+      const reviewStatus = req.query.status as string | undefined;
       const search = req.query.search as string | undefined;
 
-      const csv = await this.service.exportApplications({ programId, programIds, status, search });
+      const csv = await this.service.exportApplications({ programId, programIds, reviewStatus, search });
 
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'attachment; filename="applications.csv"');

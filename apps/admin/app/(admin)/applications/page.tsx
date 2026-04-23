@@ -9,12 +9,12 @@ type Application = {
   phone: string | null;
   programId: string;
   programName: string | null;
-  status: 'pending' | 'reviewed' | 'rejected';
+  reviewStatus: 'pending' | 'reviewed' | 'rejected';
   answers: Record<string, unknown>;
   createdAt: string;
-  // New fields
+  // Applicant fields
   collegeName: string | null;
-  applicantStatus: string | null;
+  status: string | null; // STUDENT or GRADUATE
   currentYearOrExperience: string | null;
   motivation: string | null;
 };
@@ -120,7 +120,7 @@ export default function ApplicationsAdminPage() {
 
       // Update local state
       setApplications((prev) =>
-        prev.map((app) => (app.id === id ? { ...app, status: newStatus } : app))
+        prev.map((app) => (app.id === id ? { ...app, reviewStatus: newStatus } : app))
       );
       setSuccess('Status updated successfully');
       setTimeout(() => setSuccess(null), 3000);
@@ -322,15 +322,15 @@ export default function ApplicationsAdminPage() {
                     {app.programName ?? app.programId}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusClass(app.status)}`}>
-                      {app.status}
+                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusClass(app.reviewStatus)}`}>
+                      {app.reviewStatus}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-slate-500">{formatDate(app.createdAt)}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <select
-                        value={app.status}
+                        value={app.reviewStatus}
                         onChange={(e) =>
                           updateStatus(app.id, e.target.value as 'pending' | 'reviewed' | 'rejected')
                         }
@@ -451,12 +451,12 @@ export default function ApplicationsAdminPage() {
                 <div>
                   <label className="text-xs font-medium text-slate-500">Status</label>
                   <p className="text-sm text-slate-900">
-                    {selectedApp.applicantStatus ?? 'N/A'}
+                    {selectedApp.status ?? 'N/A'}
                   </p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-slate-500">
-                    {selectedApp.applicantStatus === 'STUDENT' ? 'Current Year' : 'Experience Level'}
+                    {selectedApp.status === 'STUDENT' ? 'Current Year' : 'Experience Level'}
                   </label>
                   <p className="text-sm text-slate-900">
                     {selectedApp.currentYearOrExperience ?? 'N/A'}
@@ -465,8 +465,8 @@ export default function ApplicationsAdminPage() {
                 <div>
                   <label className="text-xs font-medium text-slate-500">Application Status</label>
                   <p className="text-sm">
-                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusClass(selectedApp.status)}`}>
-                      {selectedApp.status}
+                    <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusClass(selectedApp.reviewStatus)}`}>
+                      {selectedApp.reviewStatus}
                     </span>
                   </p>
                 </div>

@@ -10,12 +10,12 @@ export type ApplicationRecord = {
   email: string;
   phone: string | null;
   program_id: string;
-  status: string;
+  review_status: string; // pending/reviewed/rejected
   answers: Record<string, unknown>;
   created_at: Date;
   // New fields
   college_name: string | null;
-  applicant_status: string | null;
+  status: string | null; // STUDENT or GRADUATE
   current_year_or_experience: string | null;
   motivation: string | null;
 };
@@ -56,12 +56,12 @@ export class ApplyRepository {
     const pool = getPool();
     const result = await pool.query<ApplicationRecord>(
       `INSERT INTO applications (
-         name, email, phone, program_id, status, answers,
-         college_name, applicant_status, current_year_or_experience, motivation
+         name, email, phone, program_id, review_status, answers,
+         college_name, status, current_year_or_experience, motivation
        )
        VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9)
-       RETURNING id, name, email, phone, program_id, status, answers, created_at,
-                 college_name, applicant_status, current_year_or_experience, motivation`,
+       RETURNING id, name, email, phone, program_id, review_status, answers, created_at,
+                 college_name, status, current_year_or_experience, motivation`,
       [
         input.name,
         input.email,
@@ -84,13 +84,14 @@ export class ApplyRepository {
   async getApplications(filters: {
     programId?: string;
     programIds?: string[];
-    status?: string;
+    reviewStatus?: string;
     search?: string;
     limit?: number;
     offset?: number;
   }): Promise<ApplicationRecord[]> {
     const pool = getPool();
-    let query = `SELECT a.id, a.name, a.email, a.phone, a.program_id, a.status, a.answers, a.created_at,
+    let query = `SELECT a.id, a.name, a.email, a.phone, a.program_id, a.review_status, a.answers, a.created_at,
+                        a.college_name, a.status, a.current_year_or_experience, a.motivation,
                         p.title as program_title
                  FROM applications a
                  LEFT JOIN programs p ON a.program_id = p.id`;
@@ -105,9 +106,9 @@ export class ApplyRepository {
       conditions.push(`a.program_id = $${paramIdx++}`);
       values.push(filters.programId);
     }
-    if (filters.status) {
-      conditions.push(`a.status = $${paramIdx++}`);
-      values.push(filters.status);
+    if (filters.reviewStatus) {
+      conditions.push(`a.review_status = $${paramIdx++}`);
+      values.push(filters.reviewStatus);
     }
     if (filters.search) {
       const searchPattern = `%${filters.search}%`;
@@ -142,7 +143,7 @@ export class ApplyRepository {
   async countApplications(filters: {
     programId?: string;
     programIds?: string[];
-    status?: string;
+    reviewStatus?: string;
     search?: string;
   }): Promise<number> {
     const pool = getPool();
@@ -158,9 +159,9 @@ export class ApplyRepository {
       conditions.push(`program_id = $${paramIdx++}`);
       values.push(filters.programId);
     }
-    if (filters.status) {
-      conditions.push(`status = $${paramIdx++}`);
-      values.push(filters.status);
+    if (filters.reviewStatus) {
+      conditions.push(`review_status = $${paramIdx++}`);
+      values.push(filters.reviewStatus);
     }
     if (filters.search) {
       const searchPattern = `%${filters.search}%`;
@@ -180,7 +181,8 @@ export class ApplyRepository {
   async getApplicationById(id: string): Promise<ApplicationRecord | null> {
     const pool = getPool();
     const result = await pool.query<ApplicationRecord & { program_title: string | null }>(
-      `SELECT a.id, a.name, a.email, a.phone, a.program_id, a.status, a.answers, a.created_at,
+      `SELECT a.id, a.name, a.email, a.phone, a.program_id, a.review_status, a.answers, a.created_at,
+              a.college_name, a.status, a.current_year_or_experience, a.motivation,
               p.title as program_title
        FROM applications a
        LEFT JOIN programs p ON a.program_id = p.id
@@ -192,13 +194,14 @@ export class ApplyRepository {
 
   async updateStatus(
     id: string,
-    status: 'pending' | 'reviewed' | 'rejected'
+    reviewStatus: 'pending' | 'reviewed' | 'rejected'
   ): Promise<ApplicationRecord | null> {
     const pool = getPool();
     const result = await pool.query<ApplicationRecord & { program_title: string | null }>(
-      `UPDATE applications SET status = $1 WHERE id = $2
-       RETURNING id, name, email, phone, program_id, status, answers, created_at`,
-      [status, id]
+      `UPDATE applications SET review_status = $1 WHERE id = $2
+       RETURNING id, name, email, phone, program_id, review_status, answers, created_at,
+                 college_name, status, current_year_or_experience, motivation`,
+      [reviewStatus, id]
     );
     return result.rows[0] ?? null;
   }
