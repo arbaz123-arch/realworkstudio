@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getAdminAuthHeader, getApiUrl } from '@/lib/admin-api';
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const authHeader = await getAdminAuthHeader();
