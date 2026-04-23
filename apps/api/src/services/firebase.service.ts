@@ -1,4 +1,5 @@
 import admin from 'firebase-admin';
+import type { Bucket } from '@google-cloud/storage';
 import { env, isFirebaseConfigured } from '../config/env.js';
 
 let firebaseApp: admin.app.App | null = null;
@@ -44,7 +45,7 @@ export function initializeFirebase(): admin.app.App | null {
 /**
  * Get Firebase Storage bucket
  */
-export function getStorageBucket(): admin.storage.Bucket | null {
+export function getStorageBucket(): Bucket | null {
   const app = initializeFirebase();
   if (!app) {
     return null;
