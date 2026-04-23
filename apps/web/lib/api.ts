@@ -38,41 +38,47 @@ export class ApiError extends Error {
   }
 }
 
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...init,
-    cache: 'no-store',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
-  });
+async function requestJson<T>(path: string, init?: RequestInit): Promise<T | null> {
+  try {
+    const res = await fetch(`${API_URL}${path}`, {
+      ...init,
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(init?.headers ?? {}),
+      },
+    });
 
-  const data = (await res.json()) as T & { error?: string };
-  if (!res.ok) {
-    throw new ApiError(res.status, typeof data.error === 'string' ? data.error : 'Request failed');
+    const data = (await res.json()) as T & { error?: string };
+    if (!res.ok) {
+      console.error(`[API Error] ${path}:`, data.error || 'Request failed');
+      return null;
+    }
+    return data;
+  } catch (error) {
+    console.error(`[API Error] ${path}:`, error);
+    return null;
   }
-  return data;
 }
 
-export async function getHomeContent(): Promise<HomeContent> {
+export async function getHomeContent(): Promise<HomeContent | null> {
   return requestJson<HomeContent>('/api/content/home');
 }
 
-export async function getContentBlock(key: string, page = 'home'): Promise<ContentBlock> {
+export async function getContentBlock(key: string, page = 'home'): Promise<ContentBlock | null> {
   return requestJson<ContentBlock>(`/api/content/${key}?page=${encodeURIComponent(page)}`);
 }
 
-export async function getPageContent(page: string): Promise<PageContent> {
+export async function getPageContent(page: string): Promise<PageContent | null> {
   return requestJson<PageContent>(`/api/content/page/${encodeURIComponent(page)}`);
 }
 
 export async function getPrograms(): Promise<Program[]> {
   const data = await requestJson<ProgramsResponse>('/api/programs');
-  return data.items;
+  return data?.items ?? [];
 }
 
-export async function getProgramBySlug(slug: string): Promise<Program> {
+export async function getProgramBySlug(slug: string): Promise<Program | null> {
   return requestJson<Program>(`/api/programs/${slug}`);
 }
 
@@ -93,17 +99,17 @@ export async function getTestimonials(query?: TestimonialsQuery): Promise<Testim
   if (query?.offset !== undefined) params.set('offset', String(query.offset));
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const data = await requestJson<TestimonialsResponse>(`/api/testimonials${suffix}`);
-  return data.items;
+  return data?.items ?? [];
 }
 
 export async function getFeaturedTestimonials(limit = 6): Promise<Testimonial[]> {
   const data = await requestJson<TestimonialsResponse>(`/api/testimonials?isFeatured=true&limit=${limit}`);
-  return data.items;
+  return data?.items ?? [];
 }
 
 export async function getLeaderboard(): Promise<LeaderboardResponse['items']> {
   const data = await requestJson<LeaderboardResponse>('/api/leaderboard');
-  return data.items;
+  return data?.items ?? [];
 }
 
 export async function submitApplication(input: ApplyBody): Promise<void> {

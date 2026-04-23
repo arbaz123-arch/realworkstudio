@@ -48,15 +48,22 @@ export default async function TestimonialsPage({ searchParams }: TestimonialsPag
 
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-  const [programs, testimonials] = await Promise.all([
-    getPrograms(),
-    getTestimonials({
-      programId: selectedProgramId,
-      type: selectedType,
-      limit: ITEMS_PER_PAGE,
-      offset,
-    }),
-  ]);
+  let programs: Awaited<ReturnType<typeof getPrograms>> = [];
+  let testimonials: Awaited<ReturnType<typeof getTestimonials>> = [];
+
+  try {
+    [programs, testimonials] = await Promise.all([
+      getPrograms(),
+      getTestimonials({
+        programId: selectedProgramId,
+        type: selectedType,
+        limit: ITEMS_PER_PAGE,
+        offset,
+      }),
+    ]);
+  } catch (error) {
+    console.error('[TestimonialsPage] Failed to fetch data:', error);
+  }
 
   // Generate structured data for all testimonials
   const reviewsStructuredData = (testimonials ?? [])

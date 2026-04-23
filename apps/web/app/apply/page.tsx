@@ -26,7 +26,12 @@ export const metadata: Metadata = {
 };
 
 export default async function ApplyPage() {
-  const programs = await getPrograms();
+  let programs: Awaited<ReturnType<typeof getPrograms>> = [];
+  try {
+    programs = await getPrograms();
+  } catch (error) {
+    console.error('[ApplyPage] Failed to fetch programs:', error);
+  }
 
   return (
     <>
@@ -36,9 +41,15 @@ export default async function ApplyPage() {
         <p className="mt-3 text-[var(--rws-muted)]">
           Fill in your details and choose the program you want to apply for.
         </p>
-        <ApplyForm
-          programs={programs.map((program) => ({ id: program.id, title: program.title }))}
-        />
+        {programs.length === 0 ? (
+          <div className="mt-8 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+            <p>Unable to load programs. Please try again later.</p>
+          </div>
+        ) : (
+          <ApplyForm
+            programs={programs.map((program) => ({ id: program.id, title: program.title }))}
+          />
+        )}
       </main>
       <SiteFooter />
     </>
