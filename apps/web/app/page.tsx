@@ -147,9 +147,14 @@ export default async function HomePage() {
     baseUrl
   );
 
+  // Filter out null schemas to satisfy TypeScript
+  const structuredData = [organizationSchema, webPageSchema].filter(
+    (schema): schema is NonNullable<typeof schema> => schema !== null
+  );
+
   return (
     <>
-      <StructuredData data={[organizationSchema, webPageSchema]} />
+      <StructuredData data={structuredData} />
       <SiteHeader />
       <main>
         <HeroSection
