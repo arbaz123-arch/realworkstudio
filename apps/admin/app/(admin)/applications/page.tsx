@@ -12,6 +12,11 @@ type Application = {
   status: 'pending' | 'reviewed' | 'rejected';
   answers: Record<string, unknown>;
   createdAt: string;
+  // New fields
+  collegeName: string | null;
+  applicantStatus: string | null;
+  currentYearOrExperience: string | null;
+  motivation: string | null;
 };
 
 type PaginationMeta = {
@@ -440,7 +445,25 @@ export default function ApplicationsAdminPage() {
                   </p>
                 </div>
                 <div>
+                  <label className="text-xs font-medium text-slate-500">College Name</label>
+                  <p className="text-sm text-slate-900">{selectedApp.collegeName ?? 'N/A'}</p>
+                </div>
+                <div>
                   <label className="text-xs font-medium text-slate-500">Status</label>
+                  <p className="text-sm text-slate-900">
+                    {selectedApp.applicantStatus ?? 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-500">
+                    {selectedApp.applicantStatus === 'STUDENT' ? 'Current Year' : 'Experience Level'}
+                  </label>
+                  <p className="text-sm text-slate-900">
+                    {selectedApp.currentYearOrExperience ?? 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-500">Application Status</label>
                   <p className="text-sm">
                     <span className={`rounded-full px-2 py-1 text-xs font-medium ${getStatusClass(selectedApp.status)}`}>
                       {selectedApp.status}
@@ -453,12 +476,12 @@ export default function ApplicationsAdminPage() {
                 </div>
               </div>
 
-              {Object.keys(selectedApp.answers).length > 0 && (
+              {selectedApp.motivation && (
                 <div>
-                  <label className="text-xs font-medium text-slate-500">Answers</label>
-                  <pre className="mt-1 max-h-40 overflow-auto rounded-md bg-slate-50 p-3 text-xs text-slate-700">
-                    {JSON.stringify(selectedApp.answers, null, 2)}
-                  </pre>
+                  <label className="text-xs font-medium text-slate-500">Motivation</label>
+                  <p className="mt-1 text-sm text-slate-700 whitespace-pre-wrap">
+                    {selectedApp.motivation}
+                  </p>
                 </div>
               )}
             </div>

@@ -7,22 +7,24 @@ type ProgramOption = {
   title: string;
 };
 
-type ApplyQuestion = {
-  id: string;
-  label: string;
-};
+type ApplicantStatus = 'STUDENT' | 'GRADUATE';
 
 type ApplyFormProps = {
   programs: ProgramOption[];
-  questions: ApplyQuestion[];
 };
 
-export function ApplyForm({ programs, questions }: ApplyFormProps) {
+const STUDENT_YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+const GRADUATE_EXPERIENCE = ['Fresher', '0-1 yr', '1-3 yrs', '3+ yrs'];
+
+export function ApplyForm({ programs }: ApplyFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [programId, setProgramId] = useState('');
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [collegeName, setCollegeName] = useState('');
+  const [status, setStatus] = useState<ApplicantStatus>('STUDENT');
+  const [currentYearOrExperience, setCurrentYearOrExperience] = useState('');
+  const [motivation, setMotivation] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -40,8 +42,20 @@ export function ApplyForm({ programs, questions }: ApplyFormProps) {
       setError('Please enter a valid email.');
       return;
     }
+    if (phone.trim().length < 5) {
+      setError('Please enter a valid phone number.');
+      return;
+    }
     if (programId === '') {
       setError('Please select a program.');
+      return;
+    }
+    if (collegeName.trim().length < 2) {
+      setError('Please enter a valid college name.');
+      return;
+    }
+    if (currentYearOrExperience === '') {
+      setError(`Please select your ${status === 'STUDENT' ? 'current year' : 'experience level'}.`);
       return;
     }
 
@@ -53,9 +67,12 @@ export function ApplyForm({ programs, questions }: ApplyFormProps) {
         body: JSON.stringify({
           name,
           email,
-          phone: phone || undefined,
+          phone,
           programId,
-          answers,
+          collegeName,
+          status,
+          currentYearOrExperience,
+          motivation: motivation.trim() || undefined,
         }),
       });
       const data = (await res.json()) as { error?: string };
@@ -68,7 +85,10 @@ export function ApplyForm({ programs, questions }: ApplyFormProps) {
       setEmail('');
       setPhone('');
       setProgramId('');
-      setAnswers({});
+      setCollegeName('');
+      setStatus('STUDENT');
+      setCurrentYearOrExperience('');
+      setMotivation('');
     } catch {
       setError('Network error');
     } finally {
@@ -76,11 +96,13 @@ export function ApplyForm({ programs, questions }: ApplyFormProps) {
     }
   }
 
+  const yearOrExpOptions = status === 'STUDENT' ? STUDENT_YEARS : GRADUATE_EXPERIENCE;
+
   return (
     <form onSubmit={onSubmit} className="mt-8 grid gap-4 rounded-2xl border border-[var(--rws-border)] bg-[var(--rws-surface)] p-6">
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-[var(--rws-fg)]">
-          Name
+          Name <span className="text-red-500">*</span>
         </label>
         <input
           id="name"
@@ -93,7 +115,7 @@ export function ApplyForm({ programs, questions }: ApplyFormProps) {
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-[var(--rws-fg)]">
-          Email
+          Email <span className="text-red-500">*</span>
         </label>
         <input
           id="email"
@@ -107,7 +129,7 @@ export function ApplyForm({ programs, questions }: ApplyFormProps) {
 
       <div>
         <label htmlFor="phone" className="block text-sm font-medium text-[var(--rws-fg)]">
-          Phone
+          Phone <span className="text-red-500">*</span>
         </label>
         <input
           id="phone"
@@ -115,13 +137,27 @@ export function ApplyForm({ programs, questions }: ApplyFormProps) {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           className="mt-2 w-full rounded-md border border-[var(--rws-border)] bg-[var(--rws-bg)] px-3 py-2 text-sm text-[var(--rws-fg)]"
-          placeholder="Optional"
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="college" className="block text-sm font-medium text-[var(--rws-fg)]">
+          College Name <span className="text-red-500">*</span>
+        </label>
+        <input
+          id="college"
+          value={collegeName}
+          onChange={(e) => setCollegeName(e.target.value)}
+          placeholder="Enter your college or institution name"
+          className="mt-2 w-full rounded-md border border-[var(--rws-border)] bg-[var(--rws-bg)] px-3 py-2 text-sm text-[var(--rws-fg)]"
+          required
         />
       </div>
 
       <div>
         <label htmlFor="program" className="block text-sm font-medium text-[var(--rws-fg)]">
-          Program
+          Program <span className="text-red-500">*</span>
         </label>
         <select
           id="program"
@@ -139,28 +175,59 @@ export function ApplyForm({ programs, questions }: ApplyFormProps) {
         </select>
       </div>
 
-      {questions.length > 0 ? (
-        <div className="rounded-xl border border-[var(--rws-border)] bg-[var(--rws-bg)] p-4">
-          <p className="text-sm font-semibold text-[var(--rws-fg)]">Screening questions</p>
-          <div className="mt-4 grid gap-4">
-            {questions.map((q) => (
-              <div key={q.id}>
-                <label className="block text-sm font-medium text-[var(--rws-fg)]">{q.label}</label>
-                <textarea
-                  value={answers[q.id] ?? ''}
-                  onChange={(e) =>
-                    setAnswers((prev) => ({
-                      ...prev,
-                      [q.id]: e.target.value,
-                    }))
-                  }
-                  className="mt-2 min-h-20 w-full rounded-md border border-[var(--rws-border)] bg-[var(--rws-surface)] px-3 py-2 text-sm text-[var(--rws-fg)]"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
+      <div>
+        <label htmlFor="status" className="block text-sm font-medium text-[var(--rws-fg)]">
+          Status <span className="text-red-500">*</span>
+        </label>
+        <select
+          id="status"
+          value={status}
+          onChange={(e) => {
+            const newStatus = e.target.value as ApplicantStatus;
+            setStatus(newStatus);
+            setCurrentYearOrExperience(''); // Reset when status changes
+          }}
+          className="mt-2 w-full rounded-md border border-[var(--rws-border)] bg-[var(--rws-bg)] px-3 py-2 text-sm text-[var(--rws-fg)]"
+          required
+        >
+          <option value="STUDENT">Student</option>
+          <option value="GRADUATE">Graduate</option>
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="yearOrExp" className="block text-sm font-medium text-[var(--rws-fg)]">
+          {status === 'STUDENT' ? 'Current Year' : 'Experience Level'} <span className="text-red-500">*</span>
+        </label>
+        <select
+          id="yearOrExp"
+          value={currentYearOrExperience}
+          onChange={(e) => setCurrentYearOrExperience(e.target.value)}
+          className="mt-2 w-full rounded-md border border-[var(--rws-border)] bg-[var(--rws-bg)] px-3 py-2 text-sm text-[var(--rws-fg)]"
+          required
+        >
+          <option value="">Select {status === 'STUDENT' ? 'year' : 'experience'}</option>
+          {yearOrExpOptions.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="motivation" className="block text-sm font-medium text-[var(--rws-fg)]">
+          Why do you want to join this program? <span className="text-slate-400">(Optional)</span>
+        </label>
+        <textarea
+          id="motivation"
+          value={motivation}
+          onChange={(e) => setMotivation(e.target.value)}
+          placeholder="Tell us what motivates you to apply..."
+          rows={3}
+          className="mt-2 w-full rounded-md border border-[var(--rws-border)] bg-[var(--rws-bg)] px-3 py-2 text-sm text-[var(--rws-fg)]"
+        />
+      </div>
 
       <button
         type="submit"

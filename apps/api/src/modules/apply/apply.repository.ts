@@ -13,13 +13,23 @@ export type ApplicationRecord = {
   status: string;
   answers: Record<string, unknown>;
   created_at: Date;
+  // New fields
+  college_name: string | null;
+  applicant_status: string | null;
+  current_year_or_experience: string | null;
+  motivation: string | null;
 };
 
 export type CreateApplicationInput = {
   name: string;
   email: string;
-  phone?: string;
+  phone: string;
   programId: string;
+  collegeName: string;
+  status: 'STUDENT' | 'GRADUATE';
+  currentYearOrExperience: string;
+  motivation?: string;
+  // answers is deprecated but kept for backward compatibility
   answers?: Record<string, unknown>;
 };
 
@@ -45,10 +55,24 @@ export class ApplyRepository {
   async createApplication(input: CreateApplicationInput): Promise<ApplicationRecord> {
     const pool = getPool();
     const result = await pool.query<ApplicationRecord>(
-      `INSERT INTO applications (name, email, phone, program_id, status, answers)
-       VALUES ($1, $2, $3, $4, 'pending', $5)
-       RETURNING id, name, email, phone, program_id, status, answers, created_at`,
-      [input.name, input.email, input.phone ?? null, input.programId, JSON.stringify(input.answers ?? {})]
+      `INSERT INTO applications (
+         name, email, phone, program_id, status, answers,
+         college_name, applicant_status, current_year_or_experience, motivation
+       )
+       VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9)
+       RETURNING id, name, email, phone, program_id, status, answers, created_at,
+                 college_name, applicant_status, current_year_or_experience, motivation`,
+      [
+        input.name,
+        input.email,
+        input.phone,
+        input.programId,
+        JSON.stringify(input.answers ?? {}),
+        input.collegeName,
+        input.status,
+        input.currentYearOrExperience,
+        input.motivation ?? null,
+      ]
     );
     const row = result.rows[0];
     if (row === undefined) {

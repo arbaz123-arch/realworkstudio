@@ -1,6 +1,5 @@
 import { HttpError } from '../../middleware/error-handler.js';
 import type { ApplyRepository, CreateApplicationInput, ApplicationRecord } from './apply.repository.js';
-import type { ContentRepository } from '../content/content.repository.js';
 
 export type ApplyResponseDto = {
   id: string;
@@ -12,13 +11,15 @@ export type ApplyResponseDto = {
   status: string;
   answers: Record<string, unknown>;
   createdAt: string;
+  // New fields
+  collegeName: string | null;
+  applicantStatus: string | null;
+  currentYearOrExperience: string | null;
+  motivation: string | null;
 };
 
 export class ApplyService {
-  constructor(
-    private readonly repository: ApplyRepository,
-    private readonly contentRepository: ContentRepository
-  ) {}
+  constructor(private readonly repository: ApplyRepository) {}
 
   async submit(input: CreateApplicationInput): Promise<ApplyResponseDto> {
     const exists = await this.repository.programExists(input.programId);
@@ -34,8 +35,6 @@ export class ApplyService {
     if (alreadyApplied) {
       throw new HttpError(409, 'You have already applied for this program');
     }
-
-    await this.validateAnswersAgainstQuestions(input.answers ?? {});
 
     const row = await this.repository.createApplication(input);
 
@@ -162,34 +161,10 @@ export class ApplyService {
       status: row.status,
       answers: row.answers,
       createdAt: row.created_at.toISOString(),
+      collegeName: row.college_name,
+      applicantStatus: row.applicant_status,
+      currentYearOrExperience: row.current_year_or_experience,
+      motivation: row.motivation,
     };
-  }
-
-  private async validateAnswersAgainstQuestions(answers: Record<string, unknown>): Promise<void> {
-    const payload = await this.contentRepository.getHomePayload();
-    const rawQuestions = payload['applyQuestions'];
-    if (!Array.isArray(rawQuestions) || rawQuestions.length === 0) {
-      return;
-    }
-
-    const questionIds = rawQuestions
-      .filter((q): q is Record<string, unknown> => typeof q === 'object' && q !== null)
-      .map((q) => (typeof q['id'] === 'string' ? q['id'].trim() : ''))
-      .filter((id) => id !== '');
-
-    if (questionIds.length === 0) {
-      return;
-    }
-
-    const answerKeys = Object.keys(answers);
-    if (answerKeys.length !== questionIds.length) {
-      throw new HttpError(400, 'Answers must match screening questions');
-    }
-
-    for (const id of questionIds) {
-      if (!(id in answers)) {
-        throw new HttpError(400, 'Answers must match screening questions');
-      }
-    }
   }
 }

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { ApplyForm } from '@/features/apply/ApplyForm';
-import { getHomeContent, getPrograms } from '@/lib/api';
+import { getPrograms } from '@/lib/api';
 
 export const metadata: Metadata = {
   title: 'Apply Now | Join RealWorkStudio Developer Program',
@@ -26,22 +26,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ApplyPage() {
-  const [programs, content] = await Promise.all([getPrograms(), getHomeContent()]);
-  const payload = content.payload;
-  const rawQuestions = payload['applyQuestions'];
-  const questions: Array<{ id: string; label: string }> = Array.isArray(rawQuestions)
-    ? rawQuestions
-        .filter((q): q is Record<string, unknown> => typeof q === 'object' && q !== null)
-        .map((q) => ({
-          id: typeof q['id'] === 'string' && q['id'].trim() !== '' ? q['id'] : '',
-          label: typeof q['label'] === 'string' && q['label'].trim() !== '' ? q['label'] : '',
-        }))
-        .filter((q) => q.id !== '' && q.label !== '')
-    : [
-        { id: 'q1', label: 'Question 1' },
-        { id: 'q2', label: 'Question 2' },
-        { id: 'q3', label: 'Question 3' },
-      ];
+  const programs = await getPrograms();
 
   return (
     <>
@@ -53,7 +38,6 @@ export default async function ApplyPage() {
         </p>
         <ApplyForm
           programs={programs.map((program) => ({ id: program.id, title: program.title }))}
-          questions={questions}
         />
       </main>
       <SiteFooter />

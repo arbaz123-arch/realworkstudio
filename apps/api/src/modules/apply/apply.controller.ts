@@ -4,8 +4,13 @@ import type { ApplyService } from './apply.service.js';
 type ApplyBody = {
   name: string;
   email: string;
-  phone?: string;
+  phone: string;
   programId: string;
+  collegeName: string;
+  status: 'STUDENT' | 'GRADUATE';
+  currentYearOrExperience: string;
+  motivation?: string;
+  // answers is deprecated but kept for backward compatibility
   answers?: Record<string, unknown>;
 };
 
